@@ -1,0 +1,4 @@
+useDynLib(approxOT)
+import(RcppEigen)
+importFrom(Rcpp, evalCpp)
+exportPattern("^[[:alpha:]]+")

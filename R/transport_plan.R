@@ -1,0 +1,172 @@
+transport_plan_given_C <- function(mass_x, mass_y, p = 2, 
+                                   cost=NULL, method = "exact", ...) {
+  method <- match.arg(method, c("exact","sinkhorn","greenkhorn", 
+                                "randkhorn", "gandkhorn", "sinkhorn2"))
+  
+  dots <- list(...)
+  epsilon <- as.double(dots$epsilon)
+  niter <- as.integer(dots$niter)
+  stopifnot(all(is.finite(cost)))
+  
+  if(length(epsilon) == 0) epsilon <- as.double(0.05)
+  if(length(niter) == 0) niter <- as.integer(100)
+  
+  if (is.null(cost) ) stop("Cost matrix must be provided")
+  tplan <- if (method == "exact" | method == "greenkhorn" | method == "sinkhorn" |
+               method == "randkhorn" | method == "gandkhorn") {
+    
+    n1 <- length(mass_x)
+    n2 <- length(mass_y)
+    
+    if(n1 > 1 & n2 > 1) {
+      transport_C_(mass_a_ = mass_x, mass_b_ = mass_y, cost_matrix_ = cost^p, 
+                   method_ = method, epsilon_ = epsilon, niter_ = niter)
+    } else if (n2 == 1) {
+      list(from = 1:n1, to = rep(1,n1), mass = mass_x)
+    } else if (n1 == 1) {
+      list(from = rep(1,n2), to = 1:n2, mass = mass_y)
+    } else {
+      stop("Some error found in mass_x or mass_y length. Check mass input.")
+    }
+    
+  } else if (method == "sinkhorn2") {
+    
+    sinkhorn_transport(mass_x = mass_x, mass_y = mass_y, cost = cost^p, 
+                       eps = epsilon, niter = niter)
+    
+  } else {
+    stop( paste0( "Transport method ", method, " not supported" ) )
+  }
+  return( tplan )
+  
+}
+
+transport_plan <- function(X, Y, p = 2, ground_p = 2,
+                           observation.orientation = c("rowwise", "colwise"), 
+                           method = transport_options(),... ) {
+  
+  obs <- match.arg(observation.orientation)
+  method <- match.arg(method)
+  
+  if (!is.matrix(X)) {
+    X <- as.matrix(X)
+    if(dim(X)[2] == 1) X <- t(X)
+  }
+  if (!is.matrix(Y)) {
+    Y <- as.matrix(Y)
+    if(dim(Y)[2] == 1) Y <- t(Y)
+  }
+  
+  p <- as.double(p)
+  ground_p <- as.double(ground_p)
+  
+  if(obs == "rowwise"){
+    X <- t(X)
+    Y <- t(Y)
+  }
+  stopifnot(all(is.finite(X)))
+  stopifnot(all(is.finite(Y)))
+  
+  cost <- tplan <- NULL
+  if (method == "univariate.approximation") {
+    tplan <-  list(from = apply(X, 1, order), to = apply(Y,1,order), mass = rep(1/ncol(X), ncol(X)))
+    cost <- sapply(1:nrow(X), function(i) 
+      sum((X[i, tplan$from[,i],drop=FALSE] - 
+             Y[i, tplan$to[,i],drop = FALSE] )^ground_p * tplan$mass )^(1.0/ground_p))
+  } else if (method == "univariate.approximation.pwr") {
+    dots <- list(...)
+    if(is.null(dots$is.X.sorted)) dots$is.X.sorted <- FALSE
+    is.A.sorted <- as.logical(dots$is.X.sorted)
+    tplan <- transport_(A_ = X, B_ = Y, p = p, ground_p = ground_p, 
+                        method_ = method, a_sort = is.A.sorted)
+    cost <- sum((X[tplan$from] - 
+                   Y[tplan$to] )^p * tplan$mass*1/nrow(Y))
+  } else if (method == "exact" | method == "sinkhorn" | method == "greenkhorn" | method == "randkhorn" | method == "gandkhorn" | method == "sinkhorn2") {
+    # tplan <- transport_(X, Y, p, ground_p, "shortsimplex")
+    n1 <- ncol(X)
+    n2 <- ncol(Y)
+    mass_x <- as.double(rep(1/n1, n1))
+    mass_y <- as.double(rep(1/n2, n2))
+    
+    cost <- cost_calc(X, Y, ground_p)
+    tplan <- transport_plan_given_C(mass_x, mass_y, p, cost, method, ...)
+  } else if (method == "univariate" | method == "hilbert" | method == "rank") {
+    dots <- list(...)
+    if(is.null(dots$is.X.sorted)) dots$is.X.sorted <- FALSE
+    is.A.sorted <- as.logical(dots$is.X.sorted)
+    if(ncol(X) == ncol(Y) ) {
+      tplan <- transport_(A_ = X, B_ = Y, p = p, ground_p = ground_p, 
+                          method_ = method, a_sort = is.A.sorted, epsilon = 0.0, niter = 0)
+    } else if(method == "hilbert") {
+      tplan <- general_hilbert_transport(X, Y)
+    } else {
+      stop("only measures with same number of atoms supported for univariate and rank methods.")
+    }
+    cost <- c((((colSums(abs(X[, tplan$from, drop=FALSE] - Y[, tplan$to, drop=FALSE])^ground_p))^(1/ground_p))^p %*% tplan$mass)^(1/p))
+  } else if (method == "swapping") {
+    dots <- list(...)
+    epsilon <- as.double(dots$epsilon)
+    niter <- as.integer(dots$niter)
+    
+    if(length(epsilon) == 0) epsilon <- as.double(0.001)
+    if(length(niter) == 0) niter <- as.integer(100)
+    
+    if(ncol(X) > 1e6 | ncol(Y) > 1e6) {
+      if(ncol(X) == ncol(Y)) {
+        idx_x <- hilbert_proj_(X) 
+        idx_y <- hilbert_proj_(Y)
+        idxs  <- cbind(idx_x[order(idx_y)], 0:(ncol(Y)-1)) # to make similar
+        idxs  <- cbind(idx_x, idx_y)
+        mass <- rep(1/ncol(X), ncol(X))
+      } else {
+        tplan <- general_hilbert_transport(X, Y)
+        idxs <- cbind(tplan$from, tplan$to)-1
+        mass <- tplan$mass
+      }
+      if(mode(idxs) != "integer") mode(idxs) <- "integer"
+      
+      tplan <- transport_swap_(X,
+                               Y,
+                               idxs,
+                               as.double(mass),
+                               p, ground_p,
+                               epsilon, niter)
+      
+    } else {
+      is.A.sorted <- FALSE
+      
+      tplan <- transport_(A_ = X, B_ = Y, p = p, ground_p = ground_p, 
+                          method_ = method, a_sort = is.A.sorted, epsilon = epsilon, niter = niter)
+    }
+    cost <- c((((colSums(abs(X[, tplan$from, drop=FALSE] - Y[, tplan$to, drop=FALSE])^ground_p))^(1/ground_p))^p %*% tplan$mass)^(1/p))
+    
+  } else {
+    stop( paste0( "Transport method ", method, " not supported" ) )
+  }
+  
+  return(list(tplan = tplan, cost = cost ))
+  
+}
+
+general_hilbert_transport <- function(X, Y) {
+  idx_x <- hilbert_proj_(X) + 1
+  idx_y <- hilbert_proj_(Y) + 1
+  n <- ncol(X)
+  m <- ncol(Y)
+  
+  mass_a <- rep(1/n, n)
+  mass_b <- rep(1/m, m)
+  cum_a <- c(cumsum(mass_a))[-n]
+  cum_b <- c(cumsum(mass_b))[-m]
+  mass <- diff(c(0,sort(c(cum_a, cum_b)),1))
+  cum_m <- cumsum(mass)
+  arep <- table(cut(cum_m, c(-Inf, cum_a, Inf)))
+  brep <- table(cut(cum_m, c(-Inf, cum_b, Inf)))
+  a_idx <- rep(idx_x, times = arep)
+  b_idx <- rep(idx_y, times = brep)
+  
+  transport <- list(from = a_idx[order(b_idx)], to = sort(b_idx), mass = mass[order(b_idx)])
+  
+  return(transport)
+  # test <- data.frame(from = a_idx, to = b_idx, mass = mass)
+}
