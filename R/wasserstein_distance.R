@@ -111,3 +111,26 @@ wasserstein_individual <- function(X,Y, ground_p, observation.orientation = c("c
   return(loss^(1/p))
   
 }
+
+general_dist <- function(X, Y) {
+  idx_x <- hilbert_proj_(X) + 1
+  idx_y <- hilbert_proj_(Y) + 1
+  n <- ncol(X)
+  m <- ncol(Y)
+  
+  mass_a <- rep(1/n, n)
+  mass_b <- rep(1/m, m)
+  cum_a <- c(cumsum(mass_a))[-n]
+  cum_b <- c(cumsum(mass_b))[-m]
+  mass <- diff(c(0,sort(c(cum_a, cum_b)),1))
+  cum_m <- cumsum(mass)
+  arep <- table(cut(cum_m, c(-Inf, cum_a, Inf)))
+  brep <- table(cut(cum_m, c(-Inf, cum_b, Inf)))
+  a_idx <- rep(idx_x, times = arep)
+  b_idx <- rep(idx_y, times = brep)
+  
+  transport <- list(from = a_idx[order(b_idx)], to = sort(b_idx), mass = mass[order(b_idx)])
+  
+  return(transport)
+  # test <- data.frame(from = a_idx, to = b_idx, mass = mass)
+}
