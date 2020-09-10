@@ -97,10 +97,10 @@ transport_plan <- function(X, Y, p = 2, ground_p = 2,
     if(ncol(X) == ncol(Y) ) {
       tplan <- transport_(A_ = X, B_ = Y, p = p, ground_p = ground_p, 
                           method_ = method, a_sort = is.A.sorted, epsilon = 0.0, niter = 0)
-    } else if(method == "hilbert") {
-      tplan <- general_hilbert_transport(X, Y)
+    } else if(method == "hilbert" | method == "univariate") {
+      tplan <- general_1d_transport(X, Y, method = method)
     } else {
-      stop("only measures with same number of atoms supported for univariate and rank methods.")
+      stop("only measures with same number of atoms supported for rank methods.")
     }
     cost <- c((((colSums(abs(X[, tplan$from, drop=FALSE] - Y[, tplan$to, drop=FALSE])^ground_p))^(1/ground_p))^p %*% tplan$mass)^(1/p))
   } else if (method == "swapping") {
@@ -148,22 +148,57 @@ transport_plan <- function(X, Y, p = 2, ground_p = 2,
   
 }
 
-general_hilbert_transport <- function(X, Y) {
-  idx_x <- hilbert_proj_(X) + 1
-  idx_y <- hilbert_proj_(Y) + 1
+general_1d_transport <- function(X, Y, method = c("hilbert", "univariate")) {
+  method <- match.arg(method)
+  
+  if(method == "hilbert") {
+    idx_x <- hilbert_proj_(X) + 1L
+    idx_y <- hilbert_proj_(Y) + 1L
+    
+  } else if (method == "univariate") {
+    idx_x <- order(X) 
+    idx_y <- order(Y) 
+  }
   n <- ncol(X)
   m <- ncol(Y)
   
   mass_a <- rep(1/n, n)
   mass_b <- rep(1/m, m)
-  cum_a <- c(cumsum(mass_a))[-n]
-  cum_b <- c(cumsum(mass_b))[-m]
-  mass <- diff(c(0,sort(c(cum_a, cum_b)),1))
-  cum_m <- cumsum(mass)
-  arep <- table(cut(cum_m, c(-Inf, cum_a, Inf)))
-  brep <- table(cut(cum_m, c(-Inf, cum_b, Inf)))
-  a_idx <- rep(idx_x, times = arep)
-  b_idx <- rep(idx_y, times = brep)
+  cum_a  <- c(cumsum(mass_a))[-n]
+  cum_b  <- c(cumsum(mass_b))[-m]
+  mass   <- diff(c(0,unique(sort(c(cum_a, cum_b))),1))
+  # mass   <- unique(mass)
+  cum_m  <- cumsum(mass)
+  arep   <- table(cut(cum_m, c(-Inf, cum_a, Inf)))
+  brep   <- table(cut(cum_m, c(-Inf, cum_b, Inf)))
+  a_idx  <- rep(idx_x, times = arep)
+  b_idx  <- rep(idx_y, times = brep)
+  
+  transport <- list(from = a_idx[order(b_idx)], 
+                    to = sort(b_idx), 
+                    mass = mass[order(b_idx)])
+  
+  return(transport)
+  # test <- data.frame(from = a_idx, to = b_idx, mass = mass)
+}
+
+general_hilbert_transport <- function(X, Y) {
+  idx_x <-  hilbert_proj_(X) + 1L
+  idx_y <-  hilbert_proj_(Y) + 1L
+  n <- ncol(X)
+  m <- ncol(Y)
+  
+  mass_a <- rep(1/n, n)
+  mass_b <- rep(1/m, m)
+  cum_a  <- c(cumsum(mass_a))[-n]
+  cum_b  <- c(cumsum(mass_b))[-m]
+  mass   <- diff(c(0,unique(sort(c(cum_a, cum_b))),1))
+  # mass   <- unique(mass)
+  cum_m  <- cumsum(mass)
+  arep   <- table(cut(cum_m, c(-Inf, cum_a, Inf)))
+  brep   <- table(cut(cum_m, c(-Inf, cum_b, Inf)))
+  a_idx  <- rep(idx_x, times = arep)
+  b_idx  <- rep(idx_y, times = brep)
   
   transport <- list(from = a_idx[order(b_idx)], to = sort(b_idx), mass = mass[order(b_idx)])
   
