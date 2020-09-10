@@ -27,13 +27,14 @@ test_that("hilbert.projection 1d wass", {
   set.seed(234234)
   n1 <- 100
   n2 <- 200
-  d<- 10
+  d<- 1
   
   x <- matrix(rnorm(n1*d),n1,d)
   idx_x <- hilbert.projection(x)
   y <- matrix(rnorm(n2*d),n2,d)
   idx_y <- hilbert.projection(y)
   
-  
+  testthat::expect_equal(idx_x, order(x))
+  testthat::expect_equal(idx_y, order(y))
   
 })
