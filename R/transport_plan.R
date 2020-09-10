@@ -170,3 +170,63 @@ general_hilbert_transport <- function(X, Y) {
   return(transport)
   # test <- data.frame(from = a_idx, to = b_idx, mass = mass)
 }
+
+transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
+                               observation.orientation = c("rowwise", "colwise"), 
+                               method = c("hilbert", "univariate")) {
+  obs <- match.arg(observation.orientation)
+  method <- match.arg(method)
+  
+  if(!is.list(...)) {
+    data <- list(...)
+  } else {
+    data <- list(...)[[1]]
+  }
+  
+  data <- lapply(data, function(mm) {
+    if(!is.matrix(mm)) {
+      mm <- as.matrix(mm)
+      if(dim(mm)[2] == 1) mm <- t(mm)
+    }
+    return(mm) 
+    })
+  if(obs == "rowwise"){
+    data <- lapply(data, t)
+  }
+  lapply(data, function(X) stopifnot(all(is.finite(X))))
+  p <- as.double(p)
+  ground_p <- as.double(ground_p)
+  ds <- sapply(data, nrow)
+  if(all(ds != ds[1])) stop("Dimension of input data is not all the same. Data can have different numbers of observations but must have the same number of covariates.")
+  d <- ds[1]
+  
+  cost <- tplan <- NULL
+  
+  if(method == "hilbert") {
+    idx <- lapply(data, approxOT::hilbert_proj_)
+    idx <- lapply(idx, "+", 1L)
+  } else if (method == "univariate") {
+    idx <- lapply(data, order)
+  }
+  
+  n     <- sapply(data, ncol)
+  cmass <- lapply(n, function(nn) seq(1/nn,(nn-1)/nn, by = 1/nn))
+  mass  <- diff(c(0,unique(sort(unlist(cmass))),1))
+  cum_m <- cumsum(mass)
+  reps  <- lapply(cmass, function(m) table(cut(cum_m, c(-Inf, m, Inf))))
+  repidx<- mapply(function(i,r){rep(i, times = r)}, i = idx, r = reps, SIMPLIFY = FALSE)
+  names(repidx) <- names(data)
+  tplan <- list(indexes = repidx, mass = mass)
+  
+  cost  <- multi_marg_final_cost_(idx_ = tplan$indexes, 
+                                  data_ = data, 
+                                  mass_ = tplan$mass,
+                                  M = length( tplan$indexes[[1]]),
+                                  D = d,
+                                  p = p,
+                                  ground_p = ground_p
+                                  )
+  
+  return(list(tplan = tplan, cost = cost))
+}
+

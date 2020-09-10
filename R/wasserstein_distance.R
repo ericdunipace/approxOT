@@ -134,3 +134,21 @@ general_dist <- function(X, Y) {
   return(transport)
   # test <- data.frame(from = a_idx, to = b_idx, mass = mass)
 }
+
+
+wasserstein_multimarg <- function (..., p = 2, ground_p = 2, observation.orientation = c("rowwise","colwise"), 
+                         method = c("hilbert", "univariate")) {
+  
+  if (method == "univariate" | method == "hilbert" ) {
+    tp <- transport_plan_multimarg(..., p = p, ground_p = ground_p,
+                         observation.orientation = obs, method = method)
+    # loss <- c((((colSums(abs(X[, tp$tplan$from, drop = FALSE] - Y[, tp$tplan$to, drop=FALSE])^ground_p))^(1/ground_p))^p %*% tp$tplan$mass)^(1/p))
+    loss <- tp$cost
+  } else {
+    
+    stop("Transport method", method, "not currently supported for multimarginal problems.")
+    
+  }
+  
+  return(loss)
+}
