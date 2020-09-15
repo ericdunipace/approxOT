@@ -3,5 +3,5 @@ transport_options <- function() {
            "randkhorn", "gandkhorn",
            "hilbert", "rank", "univariate",
            "univariate.approximation.pwr",
-           "swapping"))
+           "swapping", "sliced"))
 }

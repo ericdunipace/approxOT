@@ -1,5 +1,25 @@
 #include "../inst/include/cost.h"
 
+int dist_2d_to_1d_(int i, int j, int n) {
+  if((i >= 0) && (j >= 0) && (i < n) && (j < n)) {
+    int ii = i;
+    int jj = j;
+    if(ii < jj) {
+      ii = j;
+      jj = i;
+    }
+    int k = (2 * n - jj - 1) * (jj) / 2 + (ii - jj) - 1;
+    return(k);
+  } else {
+    Rcpp::Rcout << 
+                   "i: " << i <<
+                   ", j: " << j <<
+                   ", and n: " << n << ". ";
+    Rcpp::stop("Non-valid indexes in dist_2d_to_1d_ function");
+  }
+}
+
+
 void cost_calculation_Lp(const refMatConst & A, const refMatConst & B, matrix & cost_matrix, double p) {
   double p_inv = 1.0/p;
   
@@ -124,5 +144,38 @@ double multi_marg_final_cost_(const Rcpp::List & idx_,
     
     return std::pow(cost, 1.0/p);
   }
+  
+}
+
+
+//[[Rcpp::export]]
+double multi_marg_given_dist_(const Rcpp::List & idx_, 
+                              const Rcpp::NumericVector & mass_,
+                              const Rcpp::NumericVector & cost_,
+                              int M, 
+                              int N_cost,
+                              double p) 
+{
+  
+  int N = idx_.size();
+  double cost = 0.0;
+  for (int m = 0; m < M; m ++) {
+    Rcpp::IntegerVector cur_idxs(N);
+    double cur_mass = mass_(m);
+    for (int n = 0 ; n < N; n++) {
+      // Rcpp::Rcout << Rcpp::as<Rcpp::IntegerVector>(idx_[n])[m] << ", ";
+      cur_idxs(n) = Rcpp::as<Rcpp::IntegerVector>(idx_[n])[m] - 1; //adapt to R index
+    }
+    for (int n = 0; n < (N-1); ++n) {
+      for (int nn = n+1; nn < N; ++nn) {
+        // Rcpp::Rcout << "M: " << m <<", " <<
+        //   cur_idxs(n) << ", " << cur_idxs(nn) << ", " <<
+        //   dist_2d_to_1d_(cur_idxs(n), cur_idxs(nn), N_cost) << "\n";
+        cost += std::pow(cost_(dist_2d_to_1d_(cur_idxs(n), cur_idxs(nn), N_cost)), p) * cur_mass;
+      }
+    }
+  }
+  
+  return std::pow(cost, 1.0/p);
   
 }

@@ -9,6 +9,10 @@ multi_marg_final_cost_ <- function(idx_, data_, mass_, M, D, p, ground_p) {
     .Call('_approxOT_multi_marg_final_cost_', PACKAGE = 'approxOT', idx_, data_, mass_, M, D, p, ground_p)
 }
 
+multi_marg_given_dist_ <- function(idx_, mass_, cost_, M, N_cost, p) {
+    .Call('_approxOT_multi_marg_given_dist_', PACKAGE = 'approxOT', idx_, mass_, cost_, M, N_cost, p)
+}
+
 hilbert_proj_ <- function(A) {
     .Call('_approxOT_hilbert_proj_', PACKAGE = 'approxOT', A)
 }

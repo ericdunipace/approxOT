@@ -103,6 +103,26 @@ transport_plan <- function(X, Y, p = 2, ground_p = 2,
       stop("only measures with same number of atoms supported for rank methods.")
     }
     cost <- c((((colSums(abs(X[, tplan$from, drop=FALSE] - Y[, tplan$to, drop=FALSE])^ground_p))^(1/ground_p))^p %*% tplan$mass)^(1/p))
+  } else if (method == "sliced") {
+    dots <- list(...)
+    tplan <- NULL
+    nboot <- dots$nboot
+    d     <- nrow(X)
+    theta <- matrix(rnorm(d * nboot), d, nboot)
+    theta <- sweep(theta, 2, STAT=apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
+    X_theta <- crossprod(x = X, y = theta)
+    Y_theta <- crossprod(x = Y, y = theta)
+    
+    costs <- sapply(1:nboot, function(i) {
+      x <- c(X_theta[,i])
+      y <- c(Y_theta[,i])
+      trans <- general_1d_transport(t(x),t(y),"univariate")
+      cost <- ((sum(abs(x[tplan$from] - y[tplan$to])^ground_p))^(1/ground_p))^p %*% tplan$mass
+      return(cost)
+      }
+      )
+    cost <- mean(costs)
+    tplan <- NULL
   } else if (method == "swapping") {
     dots <- list(...)
     epsilon <- as.double(dots$epsilon)
@@ -208,7 +228,7 @@ general_hilbert_transport <- function(X, Y) {
 
 transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
                                observation.orientation = c("rowwise", "colwise"), 
-                               method = c("hilbert", "univariate")) {
+                               method = c("hilbert", "univariate", "sliced")) {
   obs <- match.arg(observation.orientation)
   method <- match.arg(method)
   
@@ -242,6 +262,16 @@ transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
     idx <- lapply(idx, "+", 1L)
   } else if (method == "univariate") {
     idx <- lapply(data, order)
+  } else if (method == "sliced") {
+    nboot <- 1000
+    theta <- matrix(rnorm(d * nboot), d, nboot)
+    theta <- sweep(theta, 2, STAT=apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
+    data_theta <- lapply(data, crossprod, y = theta)
+    cost <- (mean(sapply(1:nboot, function(i)  transport_plan_multimarg(lapply(data_theta, function(j) t(j[,i])), 
+                                  p = p, ground_p = ground_p,
+                                  observation.orientation = "colwise", 
+                                  method = "univariate")$cost^p)))^(1.0/p)
+    return(list(tplan = NULL, cost = cost))
   }
   
   n     <- sapply(data, ncol)

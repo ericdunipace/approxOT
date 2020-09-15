@@ -3,7 +3,8 @@ wasserstein <- function (X, Y, p = 2, ground_p = 2, observation.orientation = c(
                                     "randkhorn", "gandkhorn",
                                     "hilbert", "rank", "sinkhorn2",
                                     "univariate.approximation", 
-                                    "univariate.approximation.pwr","univariate"), ... ) {
+                                    "univariate.approximation.pwr","univariate",
+                                    "sliced"), ... ) {
   obs <- match.arg(observation.orientation,  c("colwise","rowwise"))
   method <- match.arg(method)
   
@@ -43,6 +44,25 @@ wasserstein <- function (X, Y, p = 2, ground_p = 2, observation.orientation = c(
                          observation.orientation = obs, method = method, ...)
     # loss <- c((((colSums(abs(X[, tp$tplan$from, drop = FALSE] - Y[, tp$tplan$to, drop=FALSE])^ground_p))^(1/ground_p))^p %*% tp$tplan$mass)^(1/p))
     loss <- tp$cost
+  } else if (method == "sliced") {
+    dots <- list(...)
+    tplan <- NULL
+    nboot <- dots$nboot
+    d     <- nrow(X)
+    theta <- matrix(rnorm(d * nboot), d, nboot)
+    theta <- sweep(theta, 2, STAT=apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
+    X_theta <- crossprod(x = X, y = theta)
+    Y_theta <- crossprod(x = Y, y = theta)
+    
+    costs <- sapply(1:nboot, function(i) {
+      x <- c(X_theta[,i])
+      y <- c(Y_theta[,i])
+      trans <- general_1d_transport(t(x),t(y),"univariate")
+      cost <- ((sum(abs(x[tplan$from] - y[tplan$to])^ground_p))^(1/ground_p))^p %*% tplan$mass
+      return(cost)
+    }
+    )
+    loss <- mean(costs)^(1/p)
   } else {
     n1 <- ncol(X)
     n2 <- ncol(Y)

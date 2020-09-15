@@ -37,6 +37,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// multi_marg_given_dist_
+double multi_marg_given_dist_(const Rcpp::List& idx_, const Rcpp::NumericVector& mass_, const Rcpp::NumericVector& cost_, int M, int N_cost, double p);
+RcppExport SEXP _approxOT_multi_marg_given_dist_(SEXP idx_SEXP, SEXP mass_SEXP, SEXP cost_SEXP, SEXP MSEXP, SEXP N_costSEXP, SEXP pSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type idx_(idx_SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type mass_(mass_SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type cost_(cost_SEXP);
+    Rcpp::traits::input_parameter< int >::type M(MSEXP);
+    Rcpp::traits::input_parameter< int >::type N_cost(N_costSEXP);
+    Rcpp::traits::input_parameter< double >::type p(pSEXP);
+    rcpp_result_gen = Rcpp::wrap(multi_marg_given_dist_(idx_, mass_, cost_, M, N_cost, p));
+    return rcpp_result_gen;
+END_RCPP
+}
 // hilbert_proj_
 Rcpp::IntegerVector hilbert_proj_(const matrix& A);
 RcppExport SEXP _approxOT_hilbert_proj_(SEXP ASEXP) {
@@ -160,6 +176,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_approxOT_cost_calculation_", (DL_FUNC) &_approxOT_cost_calculation_, 3},
     {"_approxOT_multi_marg_final_cost_", (DL_FUNC) &_approxOT_multi_marg_final_cost_, 7},
+    {"_approxOT_multi_marg_given_dist_", (DL_FUNC) &_approxOT_multi_marg_given_dist_, 6},
     {"_approxOT_hilbert_proj_", (DL_FUNC) &_approxOT_hilbert_proj_, 1},
     {"_approxOT_sinkhorn_", (DL_FUNC) &_approxOT_sinkhorn_, 5},
     {"_approxOT_transport_C_", (DL_FUNC) &_approxOT_transport_C_, 6},
