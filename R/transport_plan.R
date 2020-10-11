@@ -232,7 +232,7 @@ transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
   obs <- match.arg(observation.orientation)
   method <- match.arg(method)
   
-  if(!is.list(...)) {
+  if(length(...) > 1) {
     data <- list(...)
   } else {
     data <- list(...)[[1]]

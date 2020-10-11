@@ -3,11 +3,11 @@ Type: Package
 Title: What the package does (short line)
 Version: 1.0
 Date: 2020-02-17
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
+Author: Eric Dunipace
+Maintainer: Eric Dunipace <edunipace@g.harvard.edu>
 Description: R and C++ functions to perform exact and approximate optimal transport. All C++ methods are linkable to other R packages via their header
 License: GPL (2.0)
-Imports: Rcpp (>= 1.0.3)
+Imports: Rcpp (>= 1.0.3), BH, RcppEigen, RcppCGAL
 LinkingTo: Rcpp, RcppEigen, RcppCGAL, BH
 Suggests: 
     testthat (>= 2.1.0)
