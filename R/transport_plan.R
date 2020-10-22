@@ -231,11 +231,11 @@ transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
                                method = c("hilbert", "univariate", "sliced")) {
   obs <- match.arg(observation.orientation)
   method <- match.arg(method)
-  
-  if(length(...) > 1) {
+
+  if(...length() > 1) {
     data <- list(...)
   } else {
-    data <- list(...)[[1]]
+    data <- (...)
   }
   
   data <- lapply(data, function(mm) {
