@@ -230,7 +230,8 @@ general_hilbert_transport <- function(X, Y) {
 
 transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
                                observation.orientation = c("rowwise", "colwise"), 
-                               method = c("hilbert", "univariate", "sliced")) {
+                               method = c("hilbert", "univariate", "sliced"),
+                               nsim = 1000) {
   obs <- match.arg(observation.orientation)
   method <- match.arg(method)
 
@@ -265,7 +266,8 @@ transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
   } else if (method == "univariate") {
     idx <- lapply(data, order)
   } else if (method == "sliced") {
-    nboot <- 1000
+    if(is.null(nsim)) nsim <- 1e3
+    nboot <- nsim
     theta <- matrix(rnorm(d * nboot), d, nboot)
     theta <- sweep(theta, 2, STAT=apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
     data_theta <- lapply(data, crossprod, y = theta)
