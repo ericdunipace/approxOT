@@ -47,18 +47,20 @@ wasserstein <- function (X, Y, p = 2, ground_p = 2, observation.orientation = c(
   } else if (method == "sliced") {
     dots <- list(...)
     tplan <- NULL
-    nboot <- dots$nboot
+    nboot <- dots$nsim
     d     <- nrow(X)
     theta <- matrix(rnorm(d * nboot), d, nboot)
     theta <- sweep(theta, 2, STAT=apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
     X_theta <- crossprod(x = X, y = theta)
     Y_theta <- crossprod(x = Y, y = theta)
-    
+    # u     <- sort(runif(nboot))
     costs <- sapply(1:nboot, function(i) {
+      # x <- quantile(c(X_theta[,i]), probs = u)
+      # y <- quantile(c(Y_theta[,i]), probs = u)
       x <- c(X_theta[,i])
       y <- c(Y_theta[,i])
       trans <- general_1d_transport(t(x),t(y),"univariate")
-      cost <- ((sum(abs(x[tplan$from] - y[tplan$to])^ground_p))^(1/ground_p))^p %*% tplan$mass
+      cost <- ((sum(abs(x[trans$from] - y[trans$to])^ground_p))^(1/ground_p))^p %*% tplan$mass
       return(cost)
     }
     )
