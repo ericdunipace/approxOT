@@ -106,14 +106,16 @@ transport_plan <- function(X, Y, p = 2, ground_p = 2,
   } else if (method == "sliced") {
     dots <- list(...)
     tplan <- NULL
-    nboot <- dots$nboot
+    nboot <- as.double(dots$nsim)
     d     <- nrow(X)
     theta <- matrix(rnorm(d * nboot), d, nboot)
     theta <- sweep(theta, 2, STAT=apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
     X_theta <- crossprod(x = X, y = theta)
     Y_theta <- crossprod(x = Y, y = theta)
-    
+    # u     <- sort(runif(nboot))
     costs <- sapply(1:nboot, function(i) {
+      # x <- quantile(c(X_theta[,i]), probs = u)
+      # y <- quantile(c(Y_theta[,i]), probs = u)
       x <- c(X_theta[,i])
       y <- c(Y_theta[,i])
       trans <- general_1d_transport(t(x),t(y),"univariate")
@@ -121,7 +123,7 @@ transport_plan <- function(X, Y, p = 2, ground_p = 2,
       return(cost)
       }
       )
-    cost <- mean(costs)
+    cost <- mean(costs)^(1/p)
     tplan <- NULL
   } else if (method == "swapping") {
     dots <- list(...)
