@@ -222,3 +222,34 @@ testthat::test_that("give error when p < 1", {
   testthat::expect_error(wasserstein(at,bt, p = p, ground_p = ground_p, "colwise", "randkhorn"))
   testthat::expect_error(wasserstein(at,bt, p = p, ground_p = ground_p, "colwise", "gandkhorn"))
 })
+
+testthat::test_that("sliced wasserstein correct", {
+  set.seed(2342)
+  n <- 128
+  nsim <- 1e3
+  d <- 10
+  p <- 1
+  x <- matrix(rnorm(n*d), n, d)
+  y <- matrix(rnorm(n*d), n, d)
+  z <- matrix(rnorm(n*d), n, d)
+  
+  theta <- matrix(rnorm(nsim*d), d, nsim)
+  theta <- sweep(theta, MARGIN = 2, STATS = apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
+  
+  xp <- x %*% theta
+  yp <- y %*% theta
+  zp <- z %*% theta
+  u <- sort(runif(nsim))
+  val2m <- sapply(1:nsim, function(i) {
+    a <- quantile(xp[,i], probs = u)
+    b <- quantile(yp[,i], probs = u)
+    
+    return(mean(abs(a - b)^p))
+  })
+  val2 <- mean(val2m)^(1/p)
+  val2.check <- approxOT::wasserstein(X = x, Y = y, p = 1, ground_p = 1, observation.orientation = "rowwise",
+                                      method = "sliced", nsim = nsim)
+  
+  testthat::expect_lt(val2.check - val2, 0.01)
+  
+})

@@ -60,7 +60,7 @@ wasserstein <- function (X, Y, p = 2, ground_p = 2, observation.orientation = c(
       x <- c(X_theta[,i])
       y <- c(Y_theta[,i])
       trans <- general_1d_transport(t(x),t(y),"univariate")
-      cost <- ((sum(abs(x[trans$from] - y[trans$to])^ground_p))^(1/ground_p))^p %*% tplan$mass
+      cost <- ((abs(x[trans$from] - y[trans$to])^ground_p)^(1/ground_p))^p %*% trans$mass
       return(cost)
     }
     )

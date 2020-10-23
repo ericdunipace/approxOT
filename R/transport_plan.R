@@ -272,7 +272,7 @@ transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
     theta <- sweep(theta, 2, STAT=apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
     data_theta <- lapply(data, crossprod, y = theta)
     cost <- (mean(sapply(1:nboot, function(i)  transport_plan_multimarg(lapply(data_theta, function(j) t(j[,i])), 
-                                  p = p, ground_p = ground_p,
+                                  p = ground_p, ground_p = ground_p,
                                   observation.orientation = "colwise", 
                                   method = "univariate")$cost^p)))^(1.0/p)
     return(list(tplan = NULL, cost = cost))
