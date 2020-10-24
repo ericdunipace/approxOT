@@ -118,7 +118,7 @@ transport_plan <- function(X, Y, p = 2, ground_p = 2,
       # y <- quantile(c(Y_theta[,i]), probs = u)
       x <- c(X_theta[,i])
       y <- c(Y_theta[,i])
-      trans <- general_1d_transport(t(x),t(y),"univariate")
+      tplan <- general_1d_transport(t(x),t(y),"univariate")
       cost <- ((sum(abs(x[tplan$from] - y[tplan$to])^ground_p))^(1/ground_p))^p %*% tplan$mass
       return(cost)
       }
