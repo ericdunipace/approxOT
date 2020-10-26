@@ -9,6 +9,16 @@ int dist_2d_to_1d_(int i, int j, int n) {
       jj = i;
     }
     int k = (2 * n - jj - 1) * (jj) / 2 + (ii - jj) - 1;
+    if(k < 0) {
+      Rcpp::Rcout << 
+        "i: " << i <<
+          ", j: " << j <<
+            ", ii: " << ii <<
+              ", jj: " << jj <<
+            ", n: " << n << 
+              ", and k: " << k << ". ";
+      Rcpp::stop("Non-valid result in dist_2d_to_1d_ function");
+    }
     return(k);
   } else {
     Rcpp::Rcout << 
@@ -168,10 +178,12 @@ double multi_marg_given_dist_(const Rcpp::List & idx_,
     }
     for (int n = 0; n < (N-1); ++n) {
       for (int nn = n+1; nn < N; ++nn) {
+        if(cur_idxs(n) != cur_idxs(nn)) {
+          cost += std::pow(cost_(dist_2d_to_1d_(cur_idxs(n), cur_idxs(nn), N_cost)), p) * cur_mass;
+        }
         // Rcpp::Rcout << "M: " << m <<", " <<
         //   cur_idxs(n) << ", " << cur_idxs(nn) << ", " <<
         //   dist_2d_to_1d_(cur_idxs(n), cur_idxs(nn), N_cost) << "\n";
-        cost += std::pow(cost_(dist_2d_to_1d_(cur_idxs(n), cur_idxs(nn), N_cost)), p) * cur_mass;
       }
     }
   }
