@@ -1,5 +1,6 @@
 transport_options <- function() {
-  return(c("exact", "sinkhorn", "greenkhorn",
+  return(c("exact", "networkflow","shortsimplex",
+           "sinkhorn", "greenkhorn",
            "randkhorn", "gandkhorn",
            "hilbert", "rank", "univariate",
            "univariate.approximation.pwr",

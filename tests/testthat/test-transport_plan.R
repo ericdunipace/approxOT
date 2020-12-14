@@ -315,7 +315,7 @@ testthat::test_that("transport_plan picks up errors", {
 #   testthat::expect_equal(all(ranks2$time > hilbert2$time), TRUE)
 # })
 
-testthat::test_that("sp transport agrees with transport package shortsimplex", {
+testthat::test_that("transport agrees with transport package shortsimplex", {
   set.seed(293897)
   A <- matrix(rnorm(100*256),nrow=256,ncol=100)
   B <- matrix(rnorm(100*256),nrow=256,ncol=100)
@@ -336,7 +336,7 @@ testthat::test_that("sp transport agrees with transport package shortsimplex", {
   mass_a <- rep(1/ncol(at), ncol(at))
   mass_b <- rep(1/ncol(bt), ncol(bt))
   costm <- cost_calc(at,bt,2)
-  indexes2 <- transport_C_(mass_a, mass_b, costm^2, "shortsimplex", epsilon = 0.05, niter=100)
+  indexes2 <- transport_C_(mass_a, mass_b, costm^2, "shortsimplex", epsilon_ = 0.05, niter_=100, threads_ = 1)
   # check_sink <- sinkhorn_(mass_a, mass_b, costm^2, 0.05*median(costm^2), 100)
   # sum(check_sink$transportmatrix * costm^2)
   testthat::expect_equal(indexes2$from, index_trans[["from"]])
@@ -350,7 +350,8 @@ testthat::test_that("sp transport agrees with transport package shortsimplex", {
   mass_c <- rep(1/ncol(C), ncol(C))
   mass_d <- rep(1/ncol(D), ncol(D))
   
-  trans_sp <- transport_C_(mass_c, mass_d, costm^2, method = "shortsimplex", epsilon = 0.05, niter=100)
+  trans_sp <- transport_C_(mass_c, mass_d, costm^2, method = "shortsimplex", epsilon = 0.05, niter=100,
+                           threads_ = 1)
   # debugonce(transport::transport.default)
   trans_t <- transport::transport.default(a=mass_c, b=mass_d, costm=costm^2, method = "shortsimplex")
   testthat::expect_equal(trans_sp$from, trans_t$from)
@@ -360,11 +361,110 @@ testthat::test_that("sp transport agrees with transport package shortsimplex", {
   # microbenchmark::microbenchmark(transport_C_(mass_c, mass_d, costm^2, method = "shortsimplex"), unit = "us")
   
   trans_t <- transport::transport.default(a=mass_d, b=mass_c, costm=t(costm^2), method = "shortsimplex")
-  trans_sp <- transport_C_(mass_d, mass_c, t(costm^2), method = "shortsimplex", epsilon = 0.05, niter=100)
+  trans_sp <- transport_C_(mass_d, mass_c, t(costm^2), method = "shortsimplex", epsilon = 0.05, niter=100,
+                           threads_ = 1)
   testthat::expect_equal(trans_sp$from, trans_t$from)
   testthat::expect_equal(trans_sp$to, trans_t$to)
   testthat::expect_equal(trans_sp$mass, trans_t$mass)
 })
+
+testthat::test_that("transport agrees with transport package networkflow", {
+  set.seed(293897)
+  A <- matrix(rnorm(100*256),nrow=256,ncol=100)
+  B <- matrix(rnorm(100*256),nrow=256,ncol=100)
+  # dist_mat <- as.matrix(dist(rbind(A,B)))[1:1024, 1025:2048]
+  # dist_mat <- dist_mat^2
+  # dist_check <- matrix(0,1024,1024)
+  at <- t(A)
+  bt <- t(B)
+  # for(i in 1:1024) for(j in 1:1024) dist_check[i,j] <- sum((at[,i] - bt[,j])^2)
+  # all.equal(c(dist_mat), c(dist_check))
+  indexes <- transport_(at, bt, 2.0, 2.0, "networkflow",FALSE)
+  #reorder for transport package comparison
+  ords <- order(indexes$from)
+  indexes <- lapply(indexes, function(i) i[ords])
+  
+  # debugonce(transport::transport.pp)
+  index_trans <- transport::transport(transport::pp(A),transport::pp(B),p=2, method = "networkflow")
+  testthat::expect_equal(indexes$from, index_trans[["from"]])
+  testthat::expect_equal(indexes$to, index_trans[["to"]])
+  testthat::expect_equal(indexes$mass, index_trans[["mass"]]/256)
+  
+  mass_a <- rep(1/ncol(at), ncol(at))
+  mass_b <- rep(1/ncol(bt), ncol(bt))
+  costm <- cost_calc(at,bt,2)
+  indexes2 <- transport_C_(mass_a, mass_b, costm^2, "networkflow", epsilon_ = 0.05, niter_=256^2, threads_ = 1)
+  ords2 <- order(indexes2$from)
+  indexes2 <- lapply(indexes2, function(i) i[ords2])
+  # check_sink <- sinkhorn_(mass_a, mass_b, costm^2, 0.05*median(costm^2), 100)
+  # sum(check_sink$transportmatrix * costm^2)
+  testthat::expect_equal(indexes2$from, index_trans[["from"]])
+  testthat::expect_equal(indexes2$to, index_trans[["to"]])
+  testthat::expect_equal(indexes2$mass, index_trans[["mass"]]/256)
+  
+  
+  mass_a <- rep(1/ncol(at), ncol(at))
+  mass_b <- rep(1/ncol(bt), ncol(bt))
+  costm <- cost_calc(at,bt,2)
+  indexes2 <- transport_C_(mass_a, mass_b, costm^2, "networkflow", epsilon_ = 0.05, niter_=0, threads_ = 1)
+  ords2 <- order(indexes2$from)
+  indexes2 <- lapply(indexes2, function(i) i[ords2])
+  # check_sink <- sinkhorn_(mass_a, mass_b, costm^2, 0.05*median(costm^2), 100)
+  # sum(check_sink$transportmatrix * costm^2)
+  testthat::expect_equal(indexes2$from, index_trans[["from"]])
+  testthat::expect_equal(indexes2$to, index_trans[["to"]])
+  testthat::expect_equal(indexes2$mass, index_trans[["mass"]]/256)
+  
+  mass_a <- rep(1/ncol(at), ncol(at))
+  mass_b <- rep(1/ncol(bt), ncol(bt))
+  costm <- cost_calc(at,bt,2)
+  testthat::expect_warning(indexes2 <- transport_C_(mass_a, mass_b, costm^2, "networkflow", epsilon_ = 0.05, niter_ = 10, threads_ = 1))
+  ords2 <- order(indexes2$from)
+  indexes2 <- lapply(indexes2, function(i) i[ords2])
+  # check_sink <- sinkhorn_(mass_a, mass_b, costm^2, 0.05*median(costm^2), 100)
+  # sum(check_sink$transportmatrix * costm^2)
+  testthat::expect_lt(length(indexes2$from), 256, label = "check that iterations works")
+  testthat::expect_lt(length(indexes2$to), 256, label = "check that iterations works")
+  testthat::expect_lt(length(indexes2$mass), 256, label = "check that iterations works")
+  testthat::expect_lt(sum(indexes2$mass), 1, label = "check that iterations works")
+  
+  C <- t(A[1:100,,drop = FALSE])
+  D <- t(B[1:2,,drop = FALSE])
+  
+  costm <- cost_calc(C,D,2.0)
+  mass_c <- rep(1/ncol(C), ncol(C))
+  mass_d <- rep(1/ncol(D), ncol(D))
+  
+  trans_sp <- transport_C_(mass_c, mass_d, costm^2, method_ = "networkflow", epsilon_ = 0.05, niter_ = 0,
+                           threads_ = 1)
+  ords3 <- order(trans_sp$from)
+  trans_sp <- lapply(trans_sp, function(i) i[ords3])
+  # debugonce(transport::transport.default)
+  trans_t <- transport::transport.default(a = mass_c, b = mass_d, costm = costm^2, method = "networkflow")
+  testthat::expect_equal(trans_sp$from, trans_t$from)
+  testthat::expect_equal(trans_sp$to, trans_t$to)
+  testthat::expect_equal(trans_sp$mass, trans_t$mass)
+  # microbenchmark::microbenchmark(transport::transport.default(a=mass_c, b=mass_d, costm=costm^2, method = "shortsimplex"), unit="us")
+  # microbenchmark::microbenchmark(transport_C_(mass_c, mass_d, costm^2, method = "shortsimplex"), unit = "us")
+  
+  trans_t <- transport::transport.default(a=mass_d, b=mass_c, costm=t(costm^2), method = "networkflow")
+  trans_sp <- transport_C_(mass_d, mass_c, t(costm^2), method = "networkflow", epsilon = 0.05, niter=0,
+                           threads_ = 1)
+  ords4 <- order(trans_sp$from)
+  trans_sp <- lapply(trans_sp, function(i) i[ords4])
+  testthat::expect_equal(trans_sp$from, trans_t$from)
+  testthat::expect_equal(trans_sp$to, trans_t$to)
+  testthat::expect_equal(trans_sp$mass, trans_t$mass)
+  
+  trans_sp <- transport_C_(mass_d, mass_c, t(costm^2), method = "exact", epsilon = 0.05, niter=0,
+                           threads_ = 1)
+  ords4 <- order(trans_sp$from)
+  trans_sp <- lapply(trans_sp, function(i) i[ords4])
+  testthat::expect_equal(trans_sp$from, trans_t$from)
+  testthat::expect_equal(trans_sp$to, trans_t$to)
+  testthat::expect_equal(trans_sp$mass, trans_t$mass)
+})
+
 
 testthat::test_that("sinkhorn works", {
   set.seed(12308947)

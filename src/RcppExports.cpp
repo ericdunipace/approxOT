@@ -80,8 +80,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // transport_C_
-Rcpp::List transport_C_(const Rcpp::NumericVector& mass_a_, const Rcpp::NumericVector& mass_b_, const Rcpp::NumericMatrix& cost_matrix_, const Rcpp::CharacterVector& method_, double epsilon_, int niter_);
-RcppExport SEXP _approxOT_transport_C_(SEXP mass_a_SEXP, SEXP mass_b_SEXP, SEXP cost_matrix_SEXP, SEXP method_SEXP, SEXP epsilon_SEXP, SEXP niter_SEXP) {
+Rcpp::List transport_C_(const Rcpp::NumericVector& mass_a_, const Rcpp::NumericVector& mass_b_, const Rcpp::NumericMatrix& cost_matrix_, const Rcpp::CharacterVector& method_, double epsilon_, int niter_, int threads_);
+RcppExport SEXP _approxOT_transport_C_(SEXP mass_a_SEXP, SEXP mass_b_SEXP, SEXP cost_matrix_SEXP, SEXP method_SEXP, SEXP epsilon_SEXP, SEXP niter_SEXP, SEXP threads_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -91,13 +91,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::CharacterVector& >::type method_(method_SEXP);
     Rcpp::traits::input_parameter< double >::type epsilon_(epsilon_SEXP);
     Rcpp::traits::input_parameter< int >::type niter_(niter_SEXP);
-    rcpp_result_gen = Rcpp::wrap(transport_C_(mass_a_, mass_b_, cost_matrix_, method_, epsilon_, niter_));
+    Rcpp::traits::input_parameter< int >::type threads_(threads_SEXP);
+    rcpp_result_gen = Rcpp::wrap(transport_C_(mass_a_, mass_b_, cost_matrix_, method_, epsilon_, niter_, threads_));
     return rcpp_result_gen;
 END_RCPP
 }
 // transport_
-Rcpp::List transport_(const Rcpp::NumericMatrix& A_, const Rcpp::NumericMatrix& B_, double p, double ground_p, const Rcpp::CharacterVector& method_, bool a_sort, double epsilon_, int niter_);
-RcppExport SEXP _approxOT_transport_(SEXP A_SEXP, SEXP B_SEXP, SEXP pSEXP, SEXP ground_pSEXP, SEXP method_SEXP, SEXP a_sortSEXP, SEXP epsilon_SEXP, SEXP niter_SEXP) {
+Rcpp::List transport_(const Rcpp::NumericMatrix& A_, const Rcpp::NumericMatrix& B_, double p, double ground_p, const Rcpp::CharacterVector& method_, bool a_sort, double epsilon_, int niter_, int threads_);
+RcppExport SEXP _approxOT_transport_(SEXP A_SEXP, SEXP B_SEXP, SEXP pSEXP, SEXP ground_pSEXP, SEXP method_SEXP, SEXP a_sortSEXP, SEXP epsilon_SEXP, SEXP niter_SEXP, SEXP threads_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -109,7 +110,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type a_sort(a_sortSEXP);
     Rcpp::traits::input_parameter< double >::type epsilon_(epsilon_SEXP);
     Rcpp::traits::input_parameter< int >::type niter_(niter_SEXP);
-    rcpp_result_gen = Rcpp::wrap(transport_(A_, B_, p, ground_p, method_, a_sort, epsilon_, niter_));
+    Rcpp::traits::input_parameter< int >::type threads_(threads_SEXP);
+    rcpp_result_gen = Rcpp::wrap(transport_(A_, B_, p, ground_p, method_, a_sort, epsilon_, niter_, threads_));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -179,8 +181,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_approxOT_multi_marg_given_dist_", (DL_FUNC) &_approxOT_multi_marg_given_dist_, 6},
     {"_approxOT_hilbert_proj_", (DL_FUNC) &_approxOT_hilbert_proj_, 1},
     {"_approxOT_sinkhorn_", (DL_FUNC) &_approxOT_sinkhorn_, 5},
-    {"_approxOT_transport_C_", (DL_FUNC) &_approxOT_transport_C_, 6},
-    {"_approxOT_transport_", (DL_FUNC) &_approxOT_transport_, 8},
+    {"_approxOT_transport_C_", (DL_FUNC) &_approxOT_transport_C_, 7},
+    {"_approxOT_transport_", (DL_FUNC) &_approxOT_transport_, 9},
     {"_approxOT_transport_swap_", (DL_FUNC) &_approxOT_transport_swap_, 8},
     {"_approxOT_wasserstein_", (DL_FUNC) &_approxOT_wasserstein_, 5},
     {"_approxOT_wasserstein_p_iid_", (DL_FUNC) &_approxOT_wasserstein_p_iid_, 3},

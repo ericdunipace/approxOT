@@ -1,26 +1,36 @@
 transport_plan_given_C <- function(mass_x, mass_y, p = 2, 
                                    cost=NULL, method = "exact", ...) {
-  method <- match.arg(method, c("exact","sinkhorn","greenkhorn", 
+  method <- match.arg(method, c("exact","networkflow","shortsimplex","sinkhorn","greenkhorn", 
                                 "randkhorn", "gandkhorn", "sinkhorn2"))
   
   dots <- list(...)
   epsilon <- as.double(dots$epsilon)
   niter <- as.integer(dots$niter)
+  threads <- as.integer(dots$threads)
   stopifnot(all(is.finite(cost)))
   
-  if(length(epsilon) == 0) epsilon <- as.double(0.05)
-  if(length(niter) == 0) niter <- as.integer(100)
+  if (length(epsilon) == 0) epsilon <- as.double(0.05)
+  if (length(niter) == 0) {
+    niter <- if (method == "exact" | method == "networkflow") {
+      as.integer(0)
+      } else {
+        as.integer(100)
+      }
+  }
+  if (length(threads) == 0) threads <- as.integer(1)
   
   if (is.null(cost) ) stop("Cost matrix must be provided")
   tplan <- if (method == "exact" | method == "greenkhorn" | method == "sinkhorn" |
-               method == "randkhorn" | method == "gandkhorn") {
+               method == "randkhorn" | method == "gandkhorn" | method == "networkflow" |
+               method == "shortsimplex") {
     
     n1 <- length(mass_x)
     n2 <- length(mass_y)
     
-    if(n1 > 1 & n2 > 1) {
+    if (n1 > 1 & n2 > 1) {
       transport_C_(mass_a_ = mass_x, mass_b_ = mass_y, cost_matrix_ = cost^p, 
-                   method_ = method, epsilon_ = epsilon, niter_ = niter)
+                   method_ = method, epsilon_ = epsilon, niter_ = niter,
+                   threads_ = threads)
     } else if (n2 == 1) {
       list(from = 1:n1, to = rep(1,n1), mass = mass_x)
     } else if (n1 == 1) {
@@ -32,7 +42,7 @@ transport_plan_given_C <- function(mass_x, mass_y, p = 2,
   } else if (method == "sinkhorn2") {
     
     sinkhorn_transport(mass_x = mass_x, mass_y = mass_y, cost = cost^p, 
-                       eps = epsilon, niter = niter)
+                       eps = epsilon, niterations = niter)
     
   } else {
     stop( paste0( "Transport method ", method, " not supported" ) )
@@ -41,62 +51,74 @@ transport_plan_given_C <- function(mass_x, mass_y, p = 2,
   
 }
 
-transport_plan <- function(X, Y, p = 2, ground_p = 2,
+transport_plan <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
                            observation.orientation = c("rowwise", "colwise"), 
-                           method = transport_options(),... ) {
+                           method = transport_options(), ... ) {
   
   obs <- match.arg(observation.orientation)
   method <- match.arg(method)
   
   if (!is.matrix(X)) {
     X <- as.matrix(X)
-    if(dim(X)[2] == 1) X <- t(X)
+    if (dim(X)[2] == 1) X <- t(X)
   }
   if (!is.matrix(Y)) {
     Y <- as.matrix(Y)
-    if(dim(Y)[2] == 1) Y <- t(Y)
+    if (dim(Y)[2] == 1) Y <- t(Y)
   }
   
   p <- as.double(p)
   ground_p <- as.double(ground_p)
   
-  if(obs == "rowwise"){
+  if (obs == "rowwise") {
     X <- t(X)
     Y <- t(Y)
   }
   stopifnot(all(is.finite(X)))
   stopifnot(all(is.finite(Y)))
   
+  n1 <- ncol(X)
+  n2 <- ncol(Y)
+  
+  if (is.null(a)) {
+    a <- as.double(rep(1/n1, n1))
+  } 
+  
+  if (is.null(a)) {
+    b <- as.double(rep(1/n2, n2))
+  }
+  mass_x <- a
+  mass_y <- b
+  
+  
   cost <- tplan <- NULL
   if (method == "univariate.approximation") {
-    tplan <-  list(from = apply(X, 1, order), to = apply(Y,1,order), mass = rep(1/ncol(X), ncol(X)))
+    tplan <-  list(from = apply(X, 1, order), to = apply(Y,1,order), mass = mass_x)
     cost <- sapply(1:nrow(X), function(i) 
-      sum((X[i, tplan$from[,i],drop=FALSE] - 
+      sum((X[i, tplan$from[,i],drop = FALSE] - 
              Y[i, tplan$to[,i],drop = FALSE] )^ground_p * tplan$mass )^(1.0/ground_p))
   } else if (method == "univariate.approximation.pwr") {
     dots <- list(...)
-    if(is.null(dots$is.X.sorted)) dots$is.X.sorted <- FALSE
+    if (is.null(dots$is.X.sorted)) dots$is.X.sorted <- FALSE
     is.A.sorted <- as.logical(dots$is.X.sorted)
     tplan <- transport_(A_ = X, B_ = Y, p = p, ground_p = ground_p, 
-                        method_ = method, a_sort = is.A.sorted)
+                        method_ = method, a_sort = is.A.sorted, threads = 1L)
     cost <- sum((X[tplan$from] - 
                    Y[tplan$to] )^p * tplan$mass*1/nrow(Y))
-  } else if (method == "exact" | method == "sinkhorn" | method == "greenkhorn" | method == "randkhorn" | method == "gandkhorn" | method == "sinkhorn2") {
+  } else if (method == "networkflow" | method == "shortsimplex" | method == "sinkhorn" | method == "greenkhorn" | method == "randkhorn" | method == "gandkhorn" | method == "sinkhorn2") {
     # tplan <- transport_(X, Y, p, ground_p, "shortsimplex")
-    n1 <- ncol(X)
-    n2 <- ncol(Y)
-    mass_x <- as.double(rep(1/n1, n1))
-    mass_y <- as.double(rep(1/n2, n2))
+    
     
     cost <- cost_calc(X, Y, ground_p)
     tplan <- transport_plan_given_C(mass_x, mass_y, p, cost, method, ...)
   } else if (method == "univariate" | method == "hilbert" | method == "rank") {
     dots <- list(...)
-    if(is.null(dots$is.X.sorted)) dots$is.X.sorted <- FALSE
+    if (is.null(dots$is.X.sorted)) dots$is.X.sorted <- FALSE
     is.A.sorted <- as.logical(dots$is.X.sorted)
-    if(ncol(X) == ncol(Y) ) {
+    if (ncol(X) == ncol(Y) ) {
       tplan <- transport_(A_ = X, B_ = Y, p = p, ground_p = ground_p, 
-                          method_ = method, a_sort = is.A.sorted, epsilon = 0.0, niter = 0)
+                          method_ = method, a_sort = is.A.sorted, epsilon = 0.0, niter = 0L,
+                          threads = 1L)
     } else if(method == "hilbert" | method == "univariate") {
       tplan <- general_1d_transport(X, Y, method = method)
     } else {
@@ -158,7 +180,8 @@ transport_plan <- function(X, Y, p = 2, ground_p = 2,
       is.A.sorted <- FALSE
       
       tplan <- transport_(A_ = X, B_ = Y, p = p, ground_p = ground_p, 
-                          method_ = method, a_sort = is.A.sorted, epsilon = epsilon, niter = niter)
+                          method_ = method, a_sort = is.A.sorted, epsilon_ = epsilon, niter_ = niter,
+                          threads_ = 1L)
     }
     cost <- c((((colSums(abs(X[, tplan$from, drop=FALSE] - Y[, tplan$to, drop=FALSE])^ground_p))^(1/ground_p))^p %*% tplan$mass)^(1/p))
     

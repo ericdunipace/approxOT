@@ -1,32 +1,72 @@
-wasserstein <- function (X, Y, p = 2, ground_p = 2, observation.orientation = c("rowwise","colwise"), 
-                         method = c("exact", "sinkhorn", "greenkhorn",
-                                    "randkhorn", "gandkhorn",
-                                    "hilbert", "rank", "sinkhorn2",
-                                    "univariate.approximation", 
-                                    "univariate.approximation.pwr","univariate",
-                                    "sliced"), ... ) {
+wasserstein <- function(X, Y, a, b, cost = NULL, tplan = NULL, p = 2, ground_p = 2, 
+                        method = transport_options(), ... ) {
+  
+  if (is.null(method)) method <- "networksimplex"
+  method <- match.arg(method)
+  p <- as.double(p)
+  
+  if (!(p >= 1)) stop("p must be >= 1")
+  
+  if (is.null(cost) & is.null(tplan)) {
+    args <- list(X = X, Y = Y, a = a, b = b, p = 2, ground_p = 2, 
+                 method = method, ... )
+    args <- args[!duplicated(names(args))]
+    argn <- lapply(names(args), as.name)
+    f.call <- as.call(setNames(c(as.name(wasserstein_calc_cost), argn), c("", names(args))))
+    
+    return(eval(f.call, envir = args))
+    
+  } else if (is.null(tplan)) {
+    
+    if (is.null(ground_p)) ground_p <- p
+    n1 <- nrow(cost)
+    n2 <- ncol(cost)
+    
+    if (missing(a) | is.null(a)) {
+      warning("assuming all points in first group have equal mass")
+      a <- as.double(rep(1/n1, n1))
+    }
+    if (missing(b) | is.null(b)) {
+      warning("assuming all points in first group have equal mass")
+      b <- as.double(rep(1/n2, n2))
+    }
+    
+    mass_x <- a
+    mass_y <- b
+    
+    tplan <- transport_plan_given_C(mass_x, mass_y, p, cost, method, ...)
+    
+  }
+  
+  loss <- wasserstein_(mass_ = tplan$mass, cost_ = cost, p = p, from_ = tplan$from, to_ = tplan$to)
+  return(loss)
+  
+}
+
+wasserstein_calc_cost <- function(X, Y, p = 2, ground_p = 2, observation.orientation = c("rowwise","colwise"), 
+                         method = transport_options(), ... ) {
   obs <- match.arg(observation.orientation,  c("colwise","rowwise"))
   method <- match.arg(method)
   
-  if(missing(X)) stop("Must specify X")
-  if(missing(Y)) stop("Must specify Y")
+  if (missing(X)) stop("Must specify X")
+  if (missing(Y)) stop("Must specify Y")
   
   if (!is.matrix(X)) {
     # warning("Attempting to coerce X to a matrix")
     X <- as.matrix(X)
-    if(dim(X)[2] == 1 & obs == "colwise") X <- t(X)
+    if (dim(X)[2] == 1 & obs == "colwise") X <- t(X)
   }
   if (!is.matrix(Y)) {
     # warning("Attempting to coerce Y to a matrix")
     Y <- as.matrix(Y)
-    if(dim(Y)[2] == 1 & obs == "colwise") Y <- t(Y)
+    if (dim(Y)[2] == 1 & obs == "colwise") Y <- t(Y)
   }
   p <- as.double(p)
   ground_p <- as.double(ground_p)
   
-  if(!(p >= 1)) stop("p must be >= 1")
+  if (!(p >= 1)) stop("p must be >= 1")
   
-  if(obs == "rowwise"){
+  if (obs == "rowwise") {
     X <- t(X)
     Y <- t(Y)
     obs <- "colwise"
@@ -50,7 +90,7 @@ wasserstein <- function (X, Y, p = 2, ground_p = 2, observation.orientation = c(
     nboot <- dots$nsim
     d     <- nrow(X)
     theta <- matrix(rnorm(d * nboot), d, nboot)
-    theta <- sweep(theta, 2, STAT=apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
+    theta <- sweep(theta, 2, STAT = apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
     X_theta <- crossprod(x = X, y = theta)
     Y_theta <- crossprod(x = Y, y = theta)
     # u     <- sort(runif(nboot))
@@ -76,7 +116,7 @@ wasserstein <- function (X, Y, p = 2, ground_p = 2, observation.orientation = c(
     # if (method == "exact") {
       
       tplan <- transport_plan_given_C(mass_x, mass_y, p, cost, method, ...)
-      loss <- wasserstein_(tplan$mass, cost, p, from=tplan$from, to = tplan$to)
+      loss <- wasserstein_(mass_ = tplan$mass, cost_ = cost, p = p, from_ = tplan$from, to_ = tplan$to)
       
     # } else if (method == "sinkhorn") {
     #   dots <- list(...)
@@ -117,10 +157,10 @@ wasserstein <- function (X, Y, p = 2, ground_p = 2, observation.orientation = c(
 # }
 
 wasserstein_individual <- function(X,Y, ground_p, observation.orientation = c("colwise","rowwise")) {
-  if(!is.matrix(X)) X <- as.matrix(X)
-  if(!is.matrix(Y)) Y <- as.matrix(Y)
+  if (!is.matrix(X)) X <- as.matrix(X)
+  if (!is.matrix(Y)) Y <- as.matrix(Y)
   obs <- match.arg(observation.orientation)
-  if(obs == "rowwise"){
+  if (obs == "rowwise") {
     X <- t(X)
     Y <- t(Y)
   }
@@ -130,7 +170,7 @@ wasserstein_individual <- function(X,Y, ground_p, observation.orientation = c("c
   
   loss <- colMeans((Xs - Ys)^ground_p)
   
-  return(loss^(1/p))
+  return(loss^(1/ground_p))
   
 }
 
@@ -158,12 +198,12 @@ general_dist <- function(X, Y) {
 }
 
 
-wasserstein_multimarg <- function (..., p = 2, ground_p = 2, observation.orientation = c("rowwise","colwise"), 
+wasserstein_multimarg <- function(..., p = 2, ground_p = 2, observation.orientation = c("rowwise","colwise"), 
                          method = c("hilbert", "univariate")) {
   
   if (method == "univariate" | method == "hilbert" ) {
     tp <- transport_plan_multimarg(..., p = p, ground_p = ground_p,
-                         observation.orientation = obs, method = method)
+                         observation.orientation = observation.orientation, method = method)
     # loss <- c((((colSums(abs(X[, tp$tplan$from, drop = FALSE] - Y[, tp$tplan$to, drop=FALSE])^ground_p))^(1/ground_p))^p %*% tp$tplan$mass)^(1/p))
     loss <- tp$cost
   } else {

@@ -6,6 +6,7 @@
 #include <string>
 #include "utils.h"
 #include "trans_hilbert.h"
+#include "networkflow.h"
 #include "trans_shortsimplex.h"
 #include "trans_rank.h"
 #include "trans_univariate.h"
