@@ -115,23 +115,23 @@ transport_plan <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
     dots <- list(...)
     if (is.null(dots$is.X.sorted)) dots$is.X.sorted <- FALSE
     is.A.sorted <- as.logical(dots$is.X.sorted)
-    if (ncol(X) == ncol(Y) ) {
+    if (isTRUE(all.equal(sort(mass_x), sort(mass_y) )) ) {
       tplan <- transport_(A_ = X, B_ = Y, p = p, ground_p = ground_p, 
-                          method_ = method, a_sort = is.A.sorted, epsilon = 0.0, niter = 0L,
-                          threads = 1L)
-    } else if(method == "hilbert" | method == "univariate") {
-      tplan <- general_1d_transport(X, Y, method = method)
+                          method_ = method, a_sort = is.A.sorted, epsilon_ = 0.0, niter_ = 0L,
+                          threads_ = 1L)
+    } else if (method == "hilbert" | method == "univariate") {
+      tplan <- general_1d_transport(X, Y, a = mass_x, b = mass_y, method = method)
     } else {
       stop("only measures with same number of atoms supported for rank methods.")
     }
-    cost <- c((((colSums(abs(X[, tplan$from, drop=FALSE] - Y[, tplan$to, drop=FALSE])^ground_p))^(1/ground_p))^p %*% tplan$mass)^(1/p))
+    cost <- c((((colSums(abs(X[, tplan$from, drop = FALSE] - Y[, tplan$to, drop = FALSE])^ground_p)^(1/ground_p))^p %*% tplan$mass)^(1/p))
   } else if (method == "sliced") {
     dots <- list(...)
     tplan <- NULL
     nboot <- as.double(dots$nsim)
     d     <- nrow(X)
     theta <- matrix(rnorm(d * nboot), d, nboot)
-    theta <- sweep(theta, 2, STAT=apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
+    theta <- sweep(theta, 2, STAT = apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
     X_theta <- crossprod(x = X, y = theta)
     Y_theta <- crossprod(x = Y, y = theta)
     # u     <- sort(runif(nboot))
@@ -193,10 +193,10 @@ transport_plan <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
   
 }
 
-general_1d_transport <- function(X, Y, method = c("hilbert", "univariate")) {
+general_1d_transport <- function(X, Y, a = NULL, b = NULL, method = c("hilbert", "univariate")) {
   method <- match.arg(method)
   
-  if(method == "hilbert") {
+  if (method == "hilbert") {
     idx_x <- hilbert_proj_(X) + 1L
     idx_y <- hilbert_proj_(Y) + 1L
     
@@ -204,11 +204,29 @@ general_1d_transport <- function(X, Y, method = c("hilbert", "univariate")) {
     idx_x <- order(X) 
     idx_y <- order(Y) 
   }
+  
   n <- ncol(X)
   m <- ncol(Y)
   
-  mass_a <- rep(1/n, n)
-  mass_b <- rep(1/m, m)
+  if (is.null(a)) {
+    mass_a <- rep(1/n, n)
+  } else {
+    a <- a[idx_x]
+    X <- X[,a > 0, drop = FALSE]
+    n <- ncol(X)
+    idx_x <- idx_x[a > 0]
+    mass_a <- a[a > 0]/sum(a[a > 0])
+  }
+  if (is.null(b)) {
+    mass_b <- rep(1/m, m)
+  } else {
+    b <- b[idx_y]
+    Y <- Y[,b > 0, drop = FALSE]
+    m <- ncol(Y)
+    idx_y <- idx_y[b > 0]
+    mass_b <- b[b > 0]/sum(b[b > 0])
+  }
+  
   cum_a  <- c(cumsum(mass_a))[-n]
   cum_b  <- c(cumsum(mass_b))[-m]
   mass   <- diff(c(0,unique(sort(c(cum_a, cum_b))),1))
@@ -216,12 +234,13 @@ general_1d_transport <- function(X, Y, method = c("hilbert", "univariate")) {
   cum_m  <- cumsum(mass)
   arep   <- table(cut(cum_m, c(-Inf, cum_a, Inf)))
   brep   <- table(cut(cum_m, c(-Inf, cum_b, Inf)))
-  a_idx  <- rep(idx_x, times = arep)
-  b_idx  <- rep(idx_y, times = brep)
+  a_idx  <- unlist(mapply(function(i,r){rep(i, times = r)}, i = idx_x, r = arep, SIMPLIFY = FALSE))
+  b_idx  <- unlist(mapply(function(i,r){rep(i, times = r)}, i = idx_y, r = brep, SIMPLIFY = FALSE))
+  # rep(idx_y, times = brep)
   
-  transport <- list(from = a_idx[order(b_idx)], 
-                    to = sort(b_idx), 
-                    mass = mass[order(b_idx)])
+  transport <- list(from = a_idx, 
+                    to = b_idx, 
+                    mass = mass)
   
   return(transport)
   # test <- data.frame(from = a_idx, to = b_idx, mass = mass)
@@ -258,14 +277,14 @@ transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
   obs <- match.arg(observation.orientation)
   method <- match.arg(method)
 
-  if(...length() > 1) {
+  if (...length() > 1) {
     data <- list(...)
   } else {
     data <- (...)
   }
   
   data <- lapply(data, function(mm) {
-    if(!is.matrix(mm)) {
+    if (!is.matrix(mm)) {
       mm <- as.matrix(mm)
       if(dim(mm)[2] == 1) mm <- t(mm)
     }
