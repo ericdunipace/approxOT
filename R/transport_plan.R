@@ -124,7 +124,7 @@ transport_plan <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
     } else {
       stop("only measures with same number of atoms supported for rank methods.")
     }
-    cost <- c((((colSums(abs(X[, tplan$from, drop = FALSE] - Y[, tplan$to, drop = FALSE])^ground_p)^(1/ground_p))^p %*% tplan$mass)^(1/p))
+    cost <- c(((colSums(abs(X[, tplan$from, drop = FALSE] - Y[, tplan$to, drop = FALSE])^ground_p)^(1/ground_p))^p %*% tplan$mass)^(1/p))
   } else if (method == "sliced") {
     dots <- list(...)
     tplan <- NULL
