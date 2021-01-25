@@ -6,6 +6,7 @@ transport_plan_given_C <- function(mass_x, mass_y, p = 2,
   dots <- list(...)
   epsilon <- as.double(dots$epsilon)
   niter <- as.integer(dots$niter)
+  unbiased <- isTRUE(as.logical(dots$unbiased))
   threads <- as.integer(dots$threads)
   stopifnot(all(is.finite(cost)))
   
@@ -28,8 +29,13 @@ transport_plan_given_C <- function(mass_x, mass_y, p = 2,
     n2 <- length(mass_y)
     
     if (n1 > 1 & n2 > 1) {
-      transport_C_(mass_a_ = mass_x, mass_b_ = mass_y, cost_matrix_ = cost^p, 
-                   method_ = method, epsilon_ = epsilon, niter_ = niter,
+      transport_C_(mass_a_ = mass_x, 
+                   mass_b_ = mass_y, 
+                   cost_matrix_ = cost^p, 
+                   method_ = method, 
+                   epsilon_ = epsilon, 
+                   niter_ = niter,
+                   unbiased_ = unbiased,
                    threads_ = threads)
     } else if (n2 == 1) {
       list(from = 1:n1, to = rep(1,n1), mass = mass_x)
@@ -84,7 +90,7 @@ transport_plan <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
     a <- as.double(rep(1/n1, n1))
   } 
   
-  if (is.null(a)) {
+  if (is.null(b)) {
     b <- as.double(rep(1/n2, n2))
   }
   mass_x <- a
@@ -102,7 +108,7 @@ transport_plan <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
     if (is.null(dots$is.X.sorted)) dots$is.X.sorted <- FALSE
     is.A.sorted <- as.logical(dots$is.X.sorted)
     tplan <- transport_(A_ = X, B_ = Y, p = p, ground_p = ground_p, 
-                        method_ = method, a_sort = is.A.sorted, threads = 1L)
+                        method_ = method, a_sort = is.A.sorted, unbiased = FALSE, threads = 1L)
     cost <- sum((X[tplan$from] - 
                    Y[tplan$to] )^p * tplan$mass*1/nrow(Y))
   } else if (method == "networkflow" | method == "shortsimplex" | method == "sinkhorn" | method == "greenkhorn" | method == "randkhorn" | method == "gandkhorn" | method == "sinkhorn2") {

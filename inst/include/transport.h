@@ -17,9 +17,11 @@
 
 void transport_C(const refVecConst & mass_a, const refVecConst & mass_b, 
                  refMat cost_matrix, matrixI & idx, vector & mass, const std::string & method,
-                 double epsilon = 0.0, int niter = 0);
+                 double epsilon = 0.0, int niter = 0,
+                 bool unbiased = false, int threads = 1);
 void transport(const matrix & A, const matrix & B, const double p, const double ground_p,
                matrixI & idx, vector & mass, const std::string & method, bool & a_sort,
-               double epsilon = 0.0, int niter = 0);
+               double epsilon = 0.0, int niter = 0,
+               bool unbiased = false, int threads = 1 );
   
 #endif //TRANSPORT_H

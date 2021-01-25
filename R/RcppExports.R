@@ -21,12 +21,12 @@ sinkhorn_ <- function(p_, q_, cost_matrix_, epsilon, niterations) {
     .Call('_approxOT_sinkhorn_', PACKAGE = 'approxOT', p_, q_, cost_matrix_, epsilon, niterations)
 }
 
-transport_C_ <- function(mass_a_, mass_b_, cost_matrix_, method_, epsilon_, niter_, threads_) {
-    .Call('_approxOT_transport_C_', PACKAGE = 'approxOT', mass_a_, mass_b_, cost_matrix_, method_, epsilon_, niter_, threads_)
+transport_C_ <- function(mass_a_, mass_b_, cost_matrix_, method_, epsilon_, niter_, unbiased_, threads_) {
+    .Call('_approxOT_transport_C_', PACKAGE = 'approxOT', mass_a_, mass_b_, cost_matrix_, method_, epsilon_, niter_, unbiased_, threads_)
 }
 
-transport_ <- function(A_, B_, p, ground_p, method_, a_sort, epsilon_ = 0.0, niter_ = 0L, threads_ = 1L) {
-    .Call('_approxOT_transport_', PACKAGE = 'approxOT', A_, B_, p, ground_p, method_, a_sort, epsilon_, niter_, threads_)
+transport_ <- function(A_, B_, p, ground_p, method_, a_sort, epsilon_ = 0.0, niter_ = 0L, unbiased_ = FALSE, threads_ = 1L) {
+    .Call('_approxOT_transport_', PACKAGE = 'approxOT', A_, B_, p, ground_p, method_, a_sort, epsilon_, niter_, unbiased_, threads_)
 }
 
 transport_swap_ <- function(A_, B_, idx_, mass_, p, ground_p, tolerance_, niter_ = 0L) {

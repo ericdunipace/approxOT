@@ -13,5 +13,6 @@ void trans_approxOT(const refVecConst & mass_a, const refVecConst & mass_b,
                     refMat cost_matrix, 
                     matrix & assign_mat,
                     double epsilon, int niterations,
+                    bool unbiased,
                     const std::string & method);
 #endif //TRANS_SINKHORN_H

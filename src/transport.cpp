@@ -69,7 +69,7 @@ void intNormalizeMass(const refVecConst & a, const refVecConst & b,
 
 void transport_C(const refVecConst & mass_a, const refVecConst & mass_b, 
                  refMat cost_matrix, matrixI & idx, vector & mass, const std::string & method,
-                double epsilon, int niter, int threads = 1) {
+                double epsilon, int niter, bool unbiased, int threads ) {
   
   int N = mass_a.size();
   int M = mass_b.size();
@@ -121,7 +121,7 @@ void transport_C(const refVecConst & mass_a, const refVecConst & mass_b,
     //                     double epsilon, int niterations,
     //                     const std::string & method);
     trans_approxOT(mass_a, mass_b, cost_matrix, assignment, 
-                   epsilon, niter, method);
+                   epsilon, niter, unbiased, method);
     which_nonzero(assignment, N, M, idx);
   // } else if (method == "randkhorn") {
   //   Rcpp::stop("transport method not found!");
@@ -147,7 +147,7 @@ void transport_C(const refVecConst & mass_a, const refVecConst & mass_b,
 
 void transport(const matrix & A, const matrix & B, const double p, const double ground_p,
                matrixI & idx, vector & mass, const std::string & method, bool & a_sort,
-               double epsilon, int niter, int threads = 1) {
+               double epsilon, int niter, bool unbiased, int threads ) {
   
   int N = A.cols();
   int M = B.cols();
@@ -196,7 +196,9 @@ void transport(const matrix & A, const matrix & B, const double p, const double 
     cost_matrix.array() = cost_matrix.array().pow(p).eval();
     
     transport_C(mass_a, mass_b, 
-                cost_matrix, idx, mass, method, epsilon, niter, threads);
+                cost_matrix, idx, mass, 
+                method, epsilon, niter, 
+                unbiased, threads);
   }
 }
 
@@ -206,6 +208,7 @@ Rcpp::List transport_C_(const Rcpp::NumericVector & mass_a_, const Rcpp::Numeric
                         const Rcpp::CharacterVector & method_,
                         double epsilon_,
                         int niter_,
+                        bool unbiased_,
                         int threads_) {
   
   const vecMap mass_a( Rcpp::as< vecMap >(mass_a_) );
@@ -220,7 +223,8 @@ Rcpp::List transport_C_(const Rcpp::NumericVector & mass_a_, const Rcpp::Numeric
   matrixI idx(N*M,2);
   vector mass(N);
   
-  transport_C(mass_a, mass_b, cost_matrix, idx, mass, method, epsilon_, niter_, threads_);
+  transport_C(mass_a, mass_b, cost_matrix, idx, mass, method, 
+              epsilon_, niter_, unbiased_, threads_);
   
   for(int i = 0; i < idx.size(); i++) idx(i) += 1;
   
@@ -235,6 +239,7 @@ Rcpp::List transport_(const Rcpp::NumericMatrix & A_,
                       const Rcpp::NumericMatrix & B_, double p, double ground_p,
                       const Rcpp::CharacterVector & method_,
                       bool a_sort, double epsilon_ = 0.0, int niter_ = 0,
+                      bool unbiased_ = false,
                       int threads_ = 1) {
   int N = A_.cols();
   int M = B_.cols();
@@ -248,7 +253,9 @@ Rcpp::List transport_(const Rcpp::NumericMatrix & A_,
   vector mass(N*M);
   
   transport(A, B, p, ground_p,
-            idx, mass, method, a_sort, epsilon_, niter_, threads_);
+            idx, mass, method, a_sort, epsilon_, niter_, 
+            unbiased_,
+            threads_);
   
   
   for(int i = 0; i < idx.size(); i++) idx(i) += 1;

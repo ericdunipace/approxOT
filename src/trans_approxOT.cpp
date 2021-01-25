@@ -4,6 +4,7 @@ void trans_approxOT(const refVecConst & mass_a, const refVecConst & mass_b,
                     refMat cost_matrix, 
                     matrix & assign_mat,
                     double epsilon, int niterations,
+                    bool unbiased,
                     const std::string & method) {
   
   double med_cost = median(cost_matrix);
@@ -49,7 +50,9 @@ void trans_approxOT(const refVecConst & mass_a, const refVecConst & mass_b,
   // 31st Conference on Neural Information Processing Systems, (1), 1–11. Long Beach, CA.
   // Rcpp::Rcout << assign_mat(0,0) << "\n";
   // Rcpp::Rcout << assign_mat.sum() << "\n";
-  round_feasible(assign_mat, mass_a, mass_b);
+  if (!unbiased) {
+    round_feasible(assign_mat, mass_a, mass_b);
+  }
   // Rcpp::Rcout << assign_mat(0,0) << "\n";
   // Rcpp::Rcout << assign_mat.sum() << "\n";
 }
