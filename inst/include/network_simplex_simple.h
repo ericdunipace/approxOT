@@ -1,4 +1,3 @@
-//TODO: add maximum interations
 /* -*- mode: C++; indent-tabs-mode: nil; -*-
  *
  *

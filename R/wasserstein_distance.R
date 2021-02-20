@@ -47,7 +47,8 @@ wasserstein <- function(X = NULL, Y = NULL, a= NULL, b = NULL, cost = NULL, tpla
     
   } else {
     loss <- wasserstein_(mass_ = tplan$mass, cost_ = cost, p = p, from_ = tplan$from, to_ = tplan$to)
-    
+    nzero_a <- rep(TRUE, nrow(cost))
+    nzero_b <- rep(TRUE, ncol(cost))
   }
   
   if (isTRUE(list(...)$unbiased) && !(method == "networkflow" | method == "shortsimplex") ) {
@@ -173,8 +174,8 @@ wasserstein <- function(X = NULL, Y = NULL, a= NULL, b = NULL, cost = NULL, tpla
     loss_a <- wasserstein_(mass_ = tplana$mass, cost_ = cost_a, p = p, from_ = tplana$from, to_ = tplana$to)
     loss_b <- wasserstein_(mass_ = tplanb$mass, cost_ = cost_b, p = p, from_ = tplanb$from, to_ = tplanb$to)
     
-    loss <- loss - 0.5 * loss_a - 0.5 * loss_b
-    loss <- loss * as.numeric(loss > 0)
+    loss_p <- (loss^p - 0.5 * loss_a^p - 0.5 * loss_b^p)
+    loss <- (loss_p * as.numeric(loss_p > 0))^(1/p)
   }
   return(loss)
   

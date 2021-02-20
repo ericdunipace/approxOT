@@ -155,7 +155,6 @@ testthat::test_that("wasserstein matches transport package for networkflow", {
   testthat::expect_equal(uni.row, uni.trans)
 })
 
-
 testthat::test_that("wasserstein matches transport package",{
   set.seed(32857)
   A <- matrix(rnorm(1000*1024),nrow=1024,ncol=1000)
@@ -232,8 +231,11 @@ testthat::test_that("make sure sinkhorn outputs agree and are less than wass", {
   
   tplan <- transport_plan_given_C(mass_a, mass_b, 2, cost, "shortsimplex")
   
-  loss <- wasserstein_(tplan$mass, cost, p = 2, tplan$from, tplan$to)
-  sink <- wasserstein(A, B, 2, 2, "colwise", "sinkhorn")
+  loss <- wasserstein_(tplan$mass, cost_ = cost, p = 2, tplan$from, tplan$to)
+  sink <- wasserstein(X = A, Y = B, 
+                      a = mass_a, b = mass_b, 
+                      p = 2, ground_p = 2, cost = cost,
+                      observation.orientation = "colwise", method = "sinkhorn")
   # sinkcost1 <- sink$distances^(1/2)
   # sinkcost2 <- sum(sink$transportmatrix * cost^2)^(1/2)
   # testthat::expect_equivalent(sinkcost1, sinkcost2)
@@ -286,4 +288,55 @@ testthat::test_that("sliced wasserstein correct", {
   
   testthat::expect_lt(val2.check - val2, 0.01)
   
+})
+
+testthat::test_that("unbaised sinkhorn works", {
+  set.seed(11289374)
+  n <- 100
+  d <- 5
+  x <- matrix(rnorm(n*d), nrow=d, ncol=n)
+  y <- matrix(rnorm(n*d), nrow=d, ncol=n)
+  
+  
+  exact <- approxOT::wasserstein(X = x, Y = y, p = 2,
+                                 ground_p = 2, observation.orientation = "colwise",
+                                 method = "networkflow")
+  sink_xy <- approxOT::wasserstein(X = x, Y = y, p = 2,
+                                         ground_p = 2, observation.orientation = "colwise",
+                                         method = "sinkhorn")
+  
+  sink_xx <- approxOT::wasserstein(X = x, Y = x, p = 2,
+                                   ground_p = 2, observation.orientation = "colwise",
+                                   method = "sinkhorn")
+  
+  sink_yy <- approxOT::wasserstein(X = x, Y = x, p = 2,
+                                   ground_p = 2, observation.orientation = "colwise",
+                                   method = "sinkhorn")
+  
+  sink_ue <- sqrt(sink_xy^2 - 0.5 * (sink_xx^2 + sink_yy^2))
+  
+  sink_u <- approxOT::wasserstein(X = x, Y = y, p = 2,
+                                   ground_p = 2, observation.orientation = "colwise",
+                                   method = "sinkhorn",
+                                   unbiased = TRUE)
+  sink_ux <- approxOT::wasserstein(X = x, Y = x, p = 2,
+                                   ground_p = 2, observation.orientation = "colwise",
+                                   method = "sinkhorn",
+                                   unbiased = TRUE)
+  sink_ux <- approxOT::wasserstein(X = x, Y = x, p = 2,
+                                   ground_p = 2, observation.orientation = "colwise",
+                                   method = "sinkhorn",
+                                   unbiased = TRUE)
+  sink_uy <- approxOT::wasserstein(X = y, Y = y, p = 2,
+                                   ground_p = 2, observation.orientation = "colwise",
+                                   method = "sinkhorn",
+                                   unbiased = TRUE)
+  # c(exact = exact, sinkhorn = sink_xy, sink_ue = sink_ue, sink_u = sink_u,
+    # sink_ux = sink_ux, sink_uy = sink_uy)
+  testthat::expect_lte(exact, sink_xy)
+  testthat::expect_lte(exact, sink_ue)
+  testthat::expect_lte(exact, sink_u)
+  
+  testthat::expect_equal(0, sink_ux)
+  testthat::expect_equal(0, sink_uy)
 })
