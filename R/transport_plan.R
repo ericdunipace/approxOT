@@ -1,5 +1,6 @@
 transport_plan_given_C <- function(mass_x, mass_y, p = 2, 
-                                   cost=NULL, method = "exact", ...) {
+                                   cost=NULL, method = "exact", 
+                                   cost_a = NULL, cost_b = NULL, ...) {
   method <- match.arg(method, c("exact","networkflow","shortsimplex","sinkhorn","greenkhorn", 
                                 "randkhorn", "gandkhorn", "sinkhorn2"))
   
@@ -9,6 +10,12 @@ transport_plan_given_C <- function(mass_x, mass_y, p = 2,
   unbiased <- isTRUE(as.logical(dots$unbiased))
   threads <- as.integer(dots$threads)
   stopifnot(all(is.finite(cost)))
+  
+  if (unbiased && (is.null(cost_a) || is.null(cost_b))) {
+    stop("Must specify cost_a and cost_b for sinkhorn unbiased")
+  } else if(!unbiased) {
+    cost_a <- cost_b <- matrix(0.0,0,0)
+  }
   
   if (length(epsilon) == 0) epsilon <- as.double(0.05)
   if (length(niter) == 0) {
@@ -32,7 +39,9 @@ transport_plan_given_C <- function(mass_x, mass_y, p = 2,
       transport_C_(mass_a_ = mass_x, 
                    mass_b_ = mass_y, 
                    cost_matrix_ = cost^p, 
-                   method_ = method, 
+                   method_ = method,
+                   cost_matrix_A_ = cost_a,
+                   cost_matrix_B_ = cost_b,
                    epsilon_ = epsilon, 
                    niter_ = niter,
                    unbiased_ = unbiased,
@@ -116,7 +125,12 @@ transport_plan <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
     
     
     cost <- cost_calc(X, Y, ground_p)
-    tplan <- transport_plan_given_C(mass_x, mass_y, p, cost, method, ...)
+    cost_a <- cost_b <- NULL
+    if (isTRUE(list(...)$unbiased) ) {
+      cost_a <- cost_calc(X, X, ground_p)
+      cost_b <- cost_calc(Y, Y, ground_p)
+    } 
+    tplan <- transport_plan_given_C(mass_x, mass_y, p, cost, method, cost_a, cost_b, ...)
   } else if (method == "univariate" | method == "hilbert" | method == "rank") {
     dots <- list(...)
     if (is.null(dots$is.X.sorted)) dots$is.X.sorted <- FALSE

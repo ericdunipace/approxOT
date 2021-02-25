@@ -198,6 +198,9 @@ void which(const matrixI & basis, int N, int M, matrixI & index);
 void which_nonzero(const matrix & basis, int N, int M, matrixI & index);
 // template <typename Derived>
 // double median(const Eigen::EigenBase<Derived>& X);
+
+double sinkhorn_converge(const vector & u, const vector & u_old);
+double sinkhorn_converge_log(const vector & f, const vector & f_old);
 double dist_approx_ot(const refVecConst & mass_a, const refVecConst & mass_b,
                 const vector & r, const vector & c, int p);
 double rho_ot(const vector & a, const vector & b);

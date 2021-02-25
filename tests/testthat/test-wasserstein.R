@@ -290,12 +290,12 @@ testthat::test_that("sliced wasserstein correct", {
   
 })
 
-testthat::test_that("unbaised sinkhorn works", {
+testthat::test_that("unbiased sinkhorn works", {
   set.seed(11289374)
-  n <- 100
+  n <- 10
   d <- 5
   x <- matrix(rnorm(n*d), nrow=d, ncol=n)
-  y <- matrix(rnorm(n*d), nrow=d, ncol=n)
+  y <- matrix(rnorm(n*d), nrow=d, ncol=n) + matrix(5, d,n)
   
   
   exact <- approxOT::wasserstein(X = x, Y = y, p = 2,
@@ -309,17 +309,13 @@ testthat::test_that("unbaised sinkhorn works", {
                                    ground_p = 2, observation.orientation = "colwise",
                                    method = "sinkhorn")
   
-  sink_yy <- approxOT::wasserstein(X = x, Y = x, p = 2,
+  sink_yy <- approxOT::wasserstein(X = y, Y = y, p = 2,
                                    ground_p = 2, observation.orientation = "colwise",
                                    method = "sinkhorn")
   
   sink_ue <- sqrt(sink_xy^2 - 0.5 * (sink_xx^2 + sink_yy^2))
   
   sink_u <- approxOT::wasserstein(X = x, Y = y, p = 2,
-                                   ground_p = 2, observation.orientation = "colwise",
-                                   method = "sinkhorn",
-                                   unbiased = TRUE)
-  sink_ux <- approxOT::wasserstein(X = x, Y = x, p = 2,
                                    ground_p = 2, observation.orientation = "colwise",
                                    method = "sinkhorn",
                                    unbiased = TRUE)
@@ -335,7 +331,7 @@ testthat::test_that("unbaised sinkhorn works", {
     # sink_ux = sink_ux, sink_uy = sink_uy)
   testthat::expect_lte(exact, sink_xy)
   testthat::expect_lte(exact, sink_ue)
-  testthat::expect_lte(exact, sink_u)
+  testthat::expect_gte(exact, sink_u)
   
   testthat::expect_equal(0, sink_ux)
   testthat::expect_equal(0, sink_uy)

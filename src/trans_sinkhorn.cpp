@@ -108,8 +108,6 @@ void trans_sinkhorn(const refVecConst & mass_a, const refVecConst & mass_b,
   int N = mass_a.size();
   int M = mass_b.size();
 
-  A = exp_cost;
-  
   vector ones_n = vector::Ones(N);
   vector ones_m = vector::Ones(M);
 
@@ -129,16 +127,166 @@ void trans_sinkhorn(const refVecConst & mass_a, const refVecConst & mass_b,
     u = mass_a.cwiseQuotient(exp_cost * v);
     
     // calc relative change in scaling vectors to see if approx converged
-    if (dist_approx_ot(ones_n, ones_m, 
-                       u.cwiseQuotient(u_old), 
-                       v.cwiseQuotient(v_old), 1.0) <= epsilon) {
-      break;
-    } else {
-      u_old = u;
-      v_old = v;
+    if (i % 10) {
+      if (sinkhorn_converge(u, u_old) <= epsilon) {
+        break;
+      }
     }
+    u_old = u;
+    v_old = v;
   }
   
   // get approximate assignment matrix
   A = u.asDiagonal() * exp_cost * v.asDiagonal();
 }
+
+vector rowLogSumExp(matrix  Mat) {
+  
+  vector max = Mat.rowwise().maxCoeff();
+  
+  vector sum = (Mat.colwise() - max).array().exp().rowwise().sum().log();
+  return max + sum;
+}
+
+vector colLogSumExp(matrix Mat) {
+  
+  Eigen::RowVectorXd max = Mat.colwise().maxCoeff();
+  vector sum = (Mat.rowwise() - max).array().exp().colwise().sum().log();
+  
+  return max.transpose() + sum;
+}
+
+void trans_sinkhorn_log(const refVecConst & mass_a, const refVecConst & mass_b,
+                    const matrix & cost,
+                    matrix & Assign,
+                    double eta, double epsilon, int niterations,
+                    const refVecConst & f_pot, const refVecConst & g_pot) {
+  int N = mass_a.size();
+  int M = mass_b.size();
+  
+  vector A = vector::Zero(N); // first margins
+  vector B = vector::Zero(M); // second margins
+  
+  vector A_old = vector::Zero(N); // first margins
+  vector B_old = vector::Zero(M); // second margins
+  
+  vector log_a = mass_a.array().log();
+  vector log_b = mass_b.array().log();
+  
+  matrix K = -eta * cost.array();
+  
+  // matrix scaling
+  for ( int i = 0; i < niterations; i ++) {
+    // column margins
+    B = -colLogSumExp(K.colwise() + (A + log_a));
+    
+    // row margins
+    A = -rowLogSumExp(K.rowwise() +  (B + log_b).transpose());
+    
+    // calc relative change in scaling vectors to see if approx converged
+    if (i % 10) {
+      if (sinkhorn_converge_log(A, A_old) <= epsilon) {
+        break;
+      }
+    }
+    A_old = A;
+    B_old = B;
+  }
+  vector f = A / eta;
+  vector g = B / eta;
+  
+  // Rcpp::Rcout << (mass_a.array() * f.array()).sum() +
+  //   (mass_b.array() * g.array()).sum() << "\n";
+  // Rcpp::Rcout << (mass_a.array() * (u.array().log() - u_pot.array().log()) / eta).sum() +
+  //   (mass_b.array() * (v.array().log() - v_pot.array().log()) / eta).sum();
+  f = f - f_pot;
+  g = g - g_pot;
+  
+  // Rcpp::Rcout << "using biased potentials " << ((A.asDiagonal() * K.exp().matrix() * B.asDiagonal()).array() * cost.array()).sum() << "\n";
+  
+  // Rcpp::Rcout << (mass_a.array() * f.array()).sum() +
+  //   (mass_b.array() * g.array()).sum() << "\n";
+  
+  // Rcpp::Rcout << "using biased potentials " << ((A.array().exp().matrix().asDiagonal() * K.array().exp().matrix() * B.array().exp().matrix().asDiagonal()).array() * cost.array()).sum() << "\n";
+  
+  // Rcpp::Rcout << "using biased potentials from paper " << ((K + ( A * vector::Ones(M).transpose() + vector::Ones(N) * B.transpose())).exp().array() * (mass_a * mass_b.transpose()).array() * cost.array()).sum() << "\n";
+  
+  // unbiased potentials if available
+  A = f * eta;
+  B = g * eta;
+  
+  // get approximate assignment matrix
+  Assign = (K + ( A * vector::Ones(M).transpose() + vector::Ones(N) * B.transpose())).array().exp() * (mass_a * mass_b.transpose()).array();
+  
+  // Rcpp::Rcout << "using unbiased potentials " << ((A.array().exp().matrix().asDiagonal() * K.array().exp().matrix() * B.array().exp().matrix().asDiagonal()).array() * cost.array()).sum() << "\n";
+  // Rcpp::Rcout << "using Assign from paper" << (Assign.array() * cost.array()).sum() << "\n";
+  
+}
+
+void trans_sinkhorn_autocorr(vector & f, const refVecConst & mass_a,
+                             const matrix & cost,
+                             double eta, double epsilon, int niterations) {
+  int N = mass_a.size();
+  
+  vector log_a = mass_a.array().log();
+
+  vector A = vector::Zero(N); // first margins
+  
+  vector A_old = vector::Zero(N); // first margins save old iteration
+  
+  matrix K = (-cost * eta).colwise() + log_a;
+
+  // matrix scaling
+  for ( int i = 0; i < niterations; i ++) {
+    
+    // row margins
+    A = 0.5 * (A - colLogSumExp(K.colwise() + A));
+    // calc relative change in scaling vectors to see if approx converged
+    // if (i % 3) { // calc every 10 iterations to avoid log calculation every step
+    if (sinkhorn_converge_log(A, A_old) <= epsilon) {
+      break;
+    }
+    // }
+    
+    // save current iteration
+    A_old = A;
+  }
+  f = -colLogSumExp(K.colwise() + A).array() / eta;
+  // get potential
+  // f = u.array().log();
+}
+
+// void trans_sinkhorn_autocorr(vector & u_pot, const refVecConst & mass_a,
+//                     const matrix & exp_cost,
+//                     double eta, double epsilon, int niterations) {
+//   int N = mass_a.size();
+// 
+//   vector ones_n = vector::Ones(N);
+// 
+//   vector u = ones_n; // first margins
+// 
+//   vector u_old = ones_n; // first margins save old iteration
+// 
+//   matrix K = exp_cost * mass_a.asDiagonal();
+// 
+//   // matrix scaling
+//   for ( int i = 0; i < niterations; i ++){
+// 
+//     // row margins
+//     u = (u.array() / (K * u).array()).sqrt();
+// 
+//     // calc relative change in scaling vectors to see if approx converged
+//     // if (i % 3) { // calc every 10 iterations to avoid log calculation every step
+//       if (sinkhorn_converge(u, u_old) <= epsilon) {
+//         break;
+//       }
+//     // }
+// 
+//     // save current iteration
+//     u_old = u;
+//   }
+// 
+//   // get potential
+//   // f = u.array().log() / eta;
+//   u_pot = u;
+// }

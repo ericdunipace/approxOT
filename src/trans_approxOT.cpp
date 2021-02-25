@@ -5,7 +5,8 @@ void trans_approxOT(const refVecConst & mass_a, const refVecConst & mass_b,
                     matrix & assign_mat,
                     double epsilon, int niterations,
                     bool unbiased,
-                    const std::string & method) {
+                    const std::string & method,
+                    refMat cost_matrix_A, refMat cost_matrix_B) {
   
   double med_cost = median(cost_matrix);
   double eta = 1.0 / (epsilon * med_cost); //avoid underflow
@@ -18,7 +19,22 @@ void trans_approxOT(const refVecConst & mass_a, const refVecConst & mass_b,
   // Rcpp::Rcout << " " << epsilon_prime;
   
   if (method == "sinkhorn") {
-    trans_sinkhorn(mass_a, mass_b, exp_cost, assign_mat, eta, epsilon_prime/2.0, niterations);
+    vector p = vector::Zero(mass_a.rows());
+    vector q = vector::Zero(mass_b.rows());
+    
+    if (unbiased) {
+      trans_sinkhorn_autocorr(p, mass_a,
+                              cost_matrix_A,
+                              eta, epsilon_prime/2.0, niterations);
+      trans_sinkhorn_autocorr(q, mass_b,
+                              cost_matrix_B,
+                              eta, epsilon_prime/2.0, niterations);
+
+    } 
+    // trans_sinkhorn(mass_a, mass_b, exp_cost, assign_mat, eta, epsilon_prime/2.0, niterations);
+    trans_sinkhorn_log(mass_a, mass_b, cost_matrix, assign_mat, eta, epsilon_prime/2.0, niterations,
+                   p, q);
+
   } else if (method == "greenkhorn" ) {
     // Rcpp::stop("transport method greenkhorn not found!");
     // trans_greenkhorn(const refVecConst & mass_a, const refVecConst & mass_b, 

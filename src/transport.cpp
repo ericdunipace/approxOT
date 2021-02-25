@@ -69,7 +69,8 @@ void intNormalizeMass(const refVecConst & a, const refVecConst & b,
 
 void transport_C(const refVecConst & mass_a, const refVecConst & mass_b, 
                  refMat cost_matrix, matrixI & idx, vector & mass, const std::string & method,
-                double epsilon, int niter, bool unbiased, int threads ) {
+                 refMat cost_matrix_A, refMat cost_matrix_B,
+                double epsilon, int niter, bool unbiased, int threads) {
   
   int N = mass_a.size();
   int M = mass_b.size();
@@ -121,7 +122,8 @@ void transport_C(const refVecConst & mass_a, const refVecConst & mass_b,
     //                     double epsilon, int niterations,
     //                     const std::string & method);
     trans_approxOT(mass_a, mass_b, cost_matrix, assignment, 
-                   epsilon, niter, unbiased, method);
+                   epsilon, niter, unbiased, method,
+                  cost_matrix_A, cost_matrix_B);
     which_nonzero(assignment, N, M, idx);
   // } else if (method == "randkhorn") {
   //   Rcpp::stop("transport method not found!");
@@ -193,12 +195,34 @@ void transport(const matrix & A, const matrix & B, const double p, const double 
       cost_calculation_Lp(A, B, cost_matrix, ground_p);
     }
     
+    matrix cost_matrix_A;
+    matrix cost_matrix_B;
+    if (unbiased) {
+      cost_matrix_A = matrix::Zero(N,N);
+      cost_matrix_B = matrix::Zero(M,M);
+      if (ground_p == 2.0) {
+        cost_calculation_L2(B, B, cost_matrix_A);
+        cost_calculation_L2(B, B, cost_matrix_A);
+      } else if (ground_p == 1.0){
+        cost_calculation_L1(B, B, cost_matrix_A);
+        cost_calculation_L1(B, B, cost_matrix_A);
+      } else {
+        cost_calculation_Lp(B, B, cost_matrix_A, ground_p);
+        cost_calculation_Lp(B, B, cost_matrix_A, ground_p);
+      }
+    } else {
+      cost_matrix_A << 0.0;
+      cost_matrix_B << 0.0;
+    }
+    
     cost_matrix.array() = cost_matrix.array().pow(p).eval();
     
     transport_C(mass_a, mass_b, 
                 cost_matrix, idx, mass, 
-                method, epsilon, niter, 
-                unbiased, threads);
+                method, cost_matrix_A, cost_matrix_B,
+                epsilon, niter, 
+                unbiased, threads
+                );
   }
 }
 
@@ -209,11 +233,15 @@ Rcpp::List transport_C_(const Rcpp::NumericVector & mass_a_, const Rcpp::Numeric
                         double epsilon_,
                         int niter_,
                         bool unbiased_,
-                        int threads_) {
+                        int threads_,
+                        const Rcpp::NumericMatrix &  cost_matrix_A_, 
+                        const Rcpp::NumericMatrix &  cost_matrix_B_) {
   
   const vecMap mass_a( Rcpp::as< vecMap >(mass_a_) );
   const vecMap mass_b( Rcpp::as< vecMap >(mass_b_) );
   const matMap cost_matrix(Rcpp::as< matMap> (cost_matrix_));
+  const matMap cost_matrix_A(Rcpp::as< matMap> (cost_matrix_A_));
+  const matMap cost_matrix_B(Rcpp::as< matMap> (cost_matrix_B_));
   
   std::string method(Rcpp::as<std::string>(method_(0)));
   
@@ -224,6 +252,7 @@ Rcpp::List transport_C_(const Rcpp::NumericVector & mass_a_, const Rcpp::Numeric
   vector mass(N);
   
   transport_C(mass_a, mass_b, cost_matrix, idx, mass, method, 
+              cost_matrix_A, cost_matrix_B,
               epsilon_, niter_, unbiased_, threads_);
   
   for(int i = 0; i < idx.size(); i++) idx(i) += 1;

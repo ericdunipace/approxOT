@@ -767,6 +767,22 @@ void which_nonzero(const matrix & basis, int N, int M, matrixI & index) { //chec
 //   return(med);
 // }
 
+double sinkhorn_converge(const vector & u, const vector & u_old) {
+  vector f = u.array().log();
+  vector f_old = u_old.array().log();
+  vector diff = (f - f_old).array().abs();
+  double out = (diff.array()/ f_old.array().abs()).sum();
+  
+  return(out);
+}
+
+double sinkhorn_converge_log(const vector & f, const vector & f_old) {
+  vector diff = (f - f_old).array().abs();
+  double out = (diff.array()/ f_old.array().abs()).sum();
+  
+  return(out);
+}
+
 double dist_approx_ot(const refVecConst & mass_a, const refVecConst & mass_b,
                 const vector & r, const vector & c, int p) {
   vector rdiff = r - mass_a;

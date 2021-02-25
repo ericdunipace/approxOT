@@ -1,5 +1,6 @@
 wasserstein <- function(X = NULL, Y = NULL, a= NULL, b = NULL, cost = NULL, tplan = NULL, p = 2, ground_p = 2, 
-                        method = transport_options(), ... ) {
+                        method = transport_options(), 
+                        cost_a = NULL, cost_b = NULL, ... ) {
   
   if (is.null(method)) method <- "networksimplex"
   method <- match.arg(method)
@@ -42,8 +43,13 @@ wasserstein <- function(X = NULL, Y = NULL, a= NULL, b = NULL, cost = NULL, tpla
     
     cost <- cost[nzero_a, nzero_b, drop = FALSE]
     
-    tplan <- transport_plan_given_C(mass_x, mass_y, p, cost, method, ...)
-    loss <- wasserstein_(mass_ = tplan$mass, cost_ = cost, p = p, from_ = tplan$from, to_ = tplan$to)
+    if (method == "sinkhorn" && isTRUE(list(...)$unbiased) ) {
+      cost_a <- cost_a[nzero_a, nzero_a, drop = FALSE]
+      cost_b <- cost_b[nzero_b, nzero_b, drop = FALSE]
+    }
+    
+    tplan <- transport_plan_given_C(mass_x, mass_y, p, cost, method, cost_a, cost_b, ...)
+    loss  <- wasserstein_(mass_ = tplan$mass, cost_ = cost, p = p, from_ = tplan$from, to_ = tplan$to)
     
   } else {
     loss <- wasserstein_(mass_ = tplan$mass, cost_ = cost, p = p, from_ = tplan$from, to_ = tplan$to)
@@ -51,132 +57,132 @@ wasserstein <- function(X = NULL, Y = NULL, a= NULL, b = NULL, cost = NULL, tpla
     nzero_b <- rep(TRUE, ncol(cost))
   }
   
-  if (isTRUE(list(...)$unbiased) && !(method == "networkflow" | method == "shortsimplex") ) {
-    dots <- list(...)
-    eps <- dots$epsilon
-    if (is.null(eps)) eps <- 0.05
-    
-    
-    
-    # if (is.null(cost) & is.null(tplan)) {
-    #   if ( isTRUE(dots$observation.orientation == "rowwise") ) {
-    #     n1  <- nrow(X)
-    #     n2  <- nrow(Y)
-    #   } else if ( isTRUE(dots$observation.orientation == "colwise")) {
-    #     n1  <- ncol(X)
-    #     n2  <- ncol(Y)
-    #   }
-    #   if (missing(a) || is.null(a)) {
-    #     a <- as.double(rep(1/n1, n1))
-    #   }
-    #   if (missing(b) || is.null(b)) {
-    #     b <- as.double(rep(1/n2, n2))
-    #   }
-    #   
-    #   nzero_a <- a != 0
-    #   nzero_b <- b != 0
-    #   mass_x <- a[nzero_a]
-    #   mass_y <- b[nzero_b]
-    #   
-    # }
-   
-      
-    if (is.null(cost) || is.null(dots$cost_a) || is.null(dots$cost_b)) {
-      obs <- match.arg(dots$observation.orientation, c("rowwise","colwise"))
-      if (obs == "rowwise") {
-        X <- t(X)
-        Y <- t(Y)
-      }
-    }
-    if (is.null(cost) ) {
-      cost   <- cost_calc(X, Y, ground_p)
-      
-      n1 <- nrow(cost)
-      n2 <- ncol(cost)
-      
-      if (missing(a) || is.null(a)) {
-        warning("assuming all points in first group have equal mass")
-        a <- as.double(rep(1/n1, n1))
-      }
-      if (missing(b) || is.null(b)) {
-        warning("assuming all points in first group have equal mass")
-        b <- as.double(rep(1/n2, n2))
-      }
-      
-      nzero_a <- a != 0
-      nzero_b <- b != 0
-      
-      mass_x <- a[nzero_a]
-      mass_y <- b[nzero_b]
-      
-      cost <- cost[nzero_a, nzero_b, drop = FALSE]
-    }
-    
-    if (is.null(dots$cost_a) && is.null(dots$cost_b)) {
-      
-      # if ( isTRUE(dots$observation.orientation == "rowwise") ) {
-      #   X <- X[nzero_a,,drop = FALSE]
-      #   Y <- Y[nzero_b,,drop = FALSE]
-      # } else if ( isTRUE(dots$observation.orientation == "colwise")) {
-      #   X <- X[,nzero_a,drop = FALSE]
-      #   Y <- Y[,nzero_b,drop = FALSE]
-      # }
-     
-      
-      cost_a <- cost_calc(X, X, ground_p)
-      cost_b <- cost_calc(Y, Y, ground_p)
-      
-      cost_a <- cost_a[nzero_a, nzero_a, drop = FALSE]
-      cost_b <- cost_b[nzero_b, nzero_b, drop = FALSE]
-      # args <- list(X = X, Y = X, a = a, b = a, p = p, ground_p = ground_p, 
-      #              method = method, ... )
-      # args <- args[!duplicated(names(args))]
-      # argn <- lapply(names(args), as.name)
-      # f.call <- as.call(setNames(c(as.name("wasserstein_calc_cost"), argn), c("", names(args))))
-      # loss_a <- eval(f.call, args)
-      # args$Y <- args$X <- Y
-      # args$a <- args$b <- b
-      # 
-      # loss_b <- eval(f.call, args)
-    } else {
-      
-      cost_a <- dots$cost_a[nzero_a, nzero_a, drop = FALSE]
-      cost_b <- dots$cost_b[nzero_b, nzero_b, drop = FALSE]
-      
-      
-    }
-    lambda <- 1 / (median(cost) * eps)
-    
-    eps_a  <- 1 / (median(cost_a) * lambda)
-    eps_b  <- 1 / (median(cost_b) * lambda)
-    
-    args.a  <- list(mass_x = mass_x, 
-                    mass_y = mass_x, 
-                    p = p, 
-                    cost = cost_a, 
-                    method = method, 
-                    epsilon = eps_a,
-                    ...)
-    args.a  <- args.a[!duplicated(names(args.a))]
-    n.a <-   lapply(names(args.a), as.name)
-    names(n.a) <- names(args.a)
-    f.call    <- as.call(c(as.name("transport_plan_given_C"), n.a))
-    
-    tplana <- eval(f.call, envir = args.a)
-    
-    args.b <- args.a
-    args.b$mass_x <- args.b$mass_y <- mass_y
-    args.b$cost <- cost_b
-    args.b$epsilon <- eps_b
-    
-    tplanb <- eval(f.call, envir = args.b)
-    
-    loss_a <- wasserstein_(mass_ = tplana$mass, cost_ = cost_a, p = p, from_ = tplana$from, to_ = tplana$to)
-    loss_b <- wasserstein_(mass_ = tplanb$mass, cost_ = cost_b, p = p, from_ = tplanb$from, to_ = tplanb$to)
-    
-    loss_p <- (loss^p - 0.5 * loss_a^p - 0.5 * loss_b^p)
-    loss <- (loss_p * as.numeric(loss_p > 0))^(1/p)
-  }
+  # if (isTRUE(list(...)$unbiased) && !(method == "networkflow" | method == "shortsimplex") ) {
+  #   dots <- list(...)
+  #   eps <- dots$epsilon
+  #   if (is.null(eps)) eps <- 0.05
+  #   
+  #   
+  #   
+  #   # if (is.null(cost) & is.null(tplan)) {
+  #   #   if ( isTRUE(dots$observation.orientation == "rowwise") ) {
+  #   #     n1  <- nrow(X)
+  #   #     n2  <- nrow(Y)
+  #   #   } else if ( isTRUE(dots$observation.orientation == "colwise")) {
+  #   #     n1  <- ncol(X)
+  #   #     n2  <- ncol(Y)
+  #   #   }
+  #   #   if (missing(a) || is.null(a)) {
+  #   #     a <- as.double(rep(1/n1, n1))
+  #   #   }
+  #   #   if (missing(b) || is.null(b)) {
+  #   #     b <- as.double(rep(1/n2, n2))
+  #   #   }
+  #   #   
+  #   #   nzero_a <- a != 0
+  #   #   nzero_b <- b != 0
+  #   #   mass_x <- a[nzero_a]
+  #   #   mass_y <- b[nzero_b]
+  #   #   
+  #   # }
+  #  
+  #     
+  #   if (is.null(cost) || is.null(dots$cost_a) || is.null(dots$cost_b)) {
+  #     obs <- match.arg(dots$observation.orientation, c("rowwise","colwise"))
+  #     if (obs == "rowwise") {
+  #       X <- t(X)
+  #       Y <- t(Y)
+  #     }
+  #   }
+  #   if (is.null(cost) ) {
+  #     cost   <- cost_calc(X, Y, ground_p)
+  #     
+  #     n1 <- nrow(cost)
+  #     n2 <- ncol(cost)
+  #     
+  #     if (missing(a) || is.null(a)) {
+  #       warning("assuming all points in first group have equal mass")
+  #       a <- as.double(rep(1/n1, n1))
+  #     }
+  #     if (missing(b) || is.null(b)) {
+  #       warning("assuming all points in first group have equal mass")
+  #       b <- as.double(rep(1/n2, n2))
+  #     }
+  #     
+  #     nzero_a <- a != 0
+  #     nzero_b <- b != 0
+  #     
+  #     mass_x <- a[nzero_a]
+  #     mass_y <- b[nzero_b]
+  #     
+  #     cost <- cost[nzero_a, nzero_b, drop = FALSE]
+  #   }
+  #   
+  #   if (is.null(dots$cost_a) && is.null(dots$cost_b)) {
+  #     
+  #     # if ( isTRUE(dots$observation.orientation == "rowwise") ) {
+  #     #   X <- X[nzero_a,,drop = FALSE]
+  #     #   Y <- Y[nzero_b,,drop = FALSE]
+  #     # } else if ( isTRUE(dots$observation.orientation == "colwise")) {
+  #     #   X <- X[,nzero_a,drop = FALSE]
+  #     #   Y <- Y[,nzero_b,drop = FALSE]
+  #     # }
+  #    
+  #     
+  #     cost_a <- cost_calc(X, X, ground_p)
+  #     cost_b <- cost_calc(Y, Y, ground_p)
+  #     
+  #     cost_a <- cost_a[nzero_a, nzero_a, drop = FALSE]
+  #     cost_b <- cost_b[nzero_b, nzero_b, drop = FALSE]
+  #     # args <- list(X = X, Y = X, a = a, b = a, p = p, ground_p = ground_p, 
+  #     #              method = method, ... )
+  #     # args <- args[!duplicated(names(args))]
+  #     # argn <- lapply(names(args), as.name)
+  #     # f.call <- as.call(setNames(c(as.name("wasserstein_calc_cost"), argn), c("", names(args))))
+  #     # loss_a <- eval(f.call, args)
+  #     # args$Y <- args$X <- Y
+  #     # args$a <- args$b <- b
+  #     # 
+  #     # loss_b <- eval(f.call, args)
+  #   } else {
+  #     
+  #     cost_a <- dots$cost_a[nzero_a, nzero_a, drop = FALSE]
+  #     cost_b <- dots$cost_b[nzero_b, nzero_b, drop = FALSE]
+  #     
+  #     
+  #   }
+  #   lambda <- 1 / (median(cost) * eps)
+  #   
+  #   eps_a  <- 1 / (median(cost_a) * lambda)
+  #   eps_b  <- 1 / (median(cost_b) * lambda)
+  #   
+  #   args.a  <- list(mass_x = mass_x, 
+  #                   mass_y = mass_x, 
+  #                   p = p, 
+  #                   cost = cost_a, 
+  #                   method = method, 
+  #                   epsilon = eps_a,
+  #                   ...)
+  #   args.a  <- args.a[!duplicated(names(args.a))]
+  #   n.a <-   lapply(names(args.a), as.name)
+  #   names(n.a) <- names(args.a)
+  #   f.call    <- as.call(c(as.name("transport_plan_given_C"), n.a))
+  #   
+  #   tplana <- eval(f.call, envir = args.a)
+  #   
+  #   args.b <- args.a
+  #   args.b$mass_x <- args.b$mass_y <- mass_y
+  #   args.b$cost <- cost_b
+  #   args.b$epsilon <- eps_b
+  #   
+  #   tplanb <- eval(f.call, envir = args.b)
+  #   
+  #   loss_a <- wasserstein_(mass_ = tplana$mass, cost_ = cost_a, p = p, from_ = tplana$from, to_ = tplana$to)
+  #   loss_b <- wasserstein_(mass_ = tplanb$mass, cost_ = cost_b, p = p, from_ = tplanb$from, to_ = tplanb$to)
+  #   
+  #   loss_p <- (loss^p - 0.5 * loss_a^p - 0.5 * loss_b^p)
+  #   loss <- (loss_p * as.numeric(loss_p > 0))^(1/p)
+  # }
   return(loss)
   
 }

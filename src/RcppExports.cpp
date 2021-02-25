@@ -80,8 +80,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // transport_C_
-Rcpp::List transport_C_(const Rcpp::NumericVector& mass_a_, const Rcpp::NumericVector& mass_b_, const Rcpp::NumericMatrix& cost_matrix_, const Rcpp::CharacterVector& method_, double epsilon_, int niter_, bool unbiased_, int threads_);
-RcppExport SEXP _approxOT_transport_C_(SEXP mass_a_SEXP, SEXP mass_b_SEXP, SEXP cost_matrix_SEXP, SEXP method_SEXP, SEXP epsilon_SEXP, SEXP niter_SEXP, SEXP unbiased_SEXP, SEXP threads_SEXP) {
+Rcpp::List transport_C_(const Rcpp::NumericVector& mass_a_, const Rcpp::NumericVector& mass_b_, const Rcpp::NumericMatrix& cost_matrix_, const Rcpp::CharacterVector& method_, double epsilon_, int niter_, bool unbiased_, int threads_, const Rcpp::NumericMatrix& cost_matrix_A_, const Rcpp::NumericMatrix& cost_matrix_B_);
+RcppExport SEXP _approxOT_transport_C_(SEXP mass_a_SEXP, SEXP mass_b_SEXP, SEXP cost_matrix_SEXP, SEXP method_SEXP, SEXP epsilon_SEXP, SEXP niter_SEXP, SEXP unbiased_SEXP, SEXP threads_SEXP, SEXP cost_matrix_A_SEXP, SEXP cost_matrix_B_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -93,7 +93,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type niter_(niter_SEXP);
     Rcpp::traits::input_parameter< bool >::type unbiased_(unbiased_SEXP);
     Rcpp::traits::input_parameter< int >::type threads_(threads_SEXP);
-    rcpp_result_gen = Rcpp::wrap(transport_C_(mass_a_, mass_b_, cost_matrix_, method_, epsilon_, niter_, unbiased_, threads_));
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type cost_matrix_A_(cost_matrix_A_SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type cost_matrix_B_(cost_matrix_B_SEXP);
+    rcpp_result_gen = Rcpp::wrap(transport_C_(mass_a_, mass_b_, cost_matrix_, method_, epsilon_, niter_, unbiased_, threads_, cost_matrix_A_, cost_matrix_B_));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -183,7 +185,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_approxOT_multi_marg_given_dist_", (DL_FUNC) &_approxOT_multi_marg_given_dist_, 6},
     {"_approxOT_hilbert_proj_", (DL_FUNC) &_approxOT_hilbert_proj_, 1},
     {"_approxOT_sinkhorn_", (DL_FUNC) &_approxOT_sinkhorn_, 5},
-    {"_approxOT_transport_C_", (DL_FUNC) &_approxOT_transport_C_, 8},
+    {"_approxOT_transport_C_", (DL_FUNC) &_approxOT_transport_C_, 10},
     {"_approxOT_transport_", (DL_FUNC) &_approxOT_transport_, 10},
     {"_approxOT_transport_swap_", (DL_FUNC) &_approxOT_transport_swap_, 8},
     {"_approxOT_wasserstein_", (DL_FUNC) &_approxOT_wasserstein_, 5},
