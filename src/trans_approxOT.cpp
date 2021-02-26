@@ -19,21 +19,23 @@ void trans_approxOT(const refVecConst & mass_a, const refVecConst & mass_b,
   // Rcpp::Rcout << " " << epsilon_prime;
   
   if (method == "sinkhorn") {
-    vector p = vector::Zero(mass_a.rows());
-    vector q = vector::Zero(mass_b.rows());
     
     if (unbiased) {
+      vector p = vector::Zero(mass_a.rows());
+      vector q = vector::Zero(mass_b.rows());
       trans_sinkhorn_autocorr(p, mass_a,
                               cost_matrix_A,
                               eta, epsilon_prime/2.0, niterations);
       trans_sinkhorn_autocorr(q, mass_b,
                               cost_matrix_B,
                               eta, epsilon_prime/2.0, niterations);
+      trans_sinkhorn_log(mass_a, mass_b, cost_matrix, assign_mat, eta, epsilon_prime/2.0, niterations,
+                         p, q);
 
-    } 
-    // trans_sinkhorn(mass_a, mass_b, exp_cost, assign_mat, eta, epsilon_prime/2.0, niterations);
-    trans_sinkhorn_log(mass_a, mass_b, cost_matrix, assign_mat, eta, epsilon_prime/2.0, niterations,
-                   p, q);
+    } else {
+      trans_sinkhorn(mass_a, mass_b, exp_cost, assign_mat, eta, epsilon_prime/2.0, niterations);
+    }
+    
 
   } else if (method == "greenkhorn" ) {
     // Rcpp::stop("transport method greenkhorn not found!");
