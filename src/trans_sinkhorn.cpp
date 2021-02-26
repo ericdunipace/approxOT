@@ -184,11 +184,11 @@ void trans_sinkhorn_log(const refVecConst & mass_a, const refVecConst & mass_b,
     A = -rowLogSumExp(K.rowwise() +  (B + log_b).transpose());
     
     // calc relative change in scaling vectors to see if approx converged
-    if (i % 10) {
+    // if (i % 10) {
       if (sinkhorn_converge_log(A, A_old) <= epsilon) {
         break;
       }
-    }
+    // }
     A_old = A;
     B_old = B;
   }
