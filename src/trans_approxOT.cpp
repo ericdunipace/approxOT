@@ -20,21 +20,23 @@ void trans_approxOT(const refVecConst & mass_a, const refVecConst & mass_b,
   
   if (method == "sinkhorn") {
     
-    if (unbiased) {
-      vector p = vector::Zero(mass_a.rows());
-      vector q = vector::Zero(mass_b.rows());
-      trans_sinkhorn_autocorr(p, mass_a,
-                              cost_matrix_A,
-                              eta, epsilon_prime/2.0, niterations);
-      trans_sinkhorn_autocorr(q, mass_b,
-                              cost_matrix_B,
-                              eta, epsilon_prime/2.0, niterations);
-      trans_sinkhorn_log(mass_a, mass_b, cost_matrix, assign_mat, eta, epsilon_prime/2.0, niterations,
-                         p, q);
-
-    } else {
+    // if (unbiased) {
+    //   const matrix exp_cost_a = (-eta * cost_matrix_A.array() ).exp();
+    //   const matrix exp_cost_b = (-eta * cost_matrix_B.array() ).exp();
+    //   vector p = vector::Zero(mass_a.rows());
+    //   vector q = vector::Zero(mass_b.rows());
+    //   trans_sinkhorn_self(p, mass_a,
+    //                           exp_cost_a,
+    //                           epsilon_prime/2.0, niterations);
+    //   trans_sinkhorn_self(q, mass_b,
+    //                           exp_cost_b,
+    //                           eta, epsilon_prime/2.0, niterations);
+    //   trans_sinkhorn(mass_a, mass_b, cost_matrix, assign_mat, eta, epsilon_prime/2.0, niterations,
+    //                      p, q);
+    // 
+    // } else {
       trans_sinkhorn(mass_a, mass_b, exp_cost, assign_mat, eta, epsilon_prime/2.0, niterations);
-    }
+    // }
     
 
   } else if (method == "greenkhorn" ) {

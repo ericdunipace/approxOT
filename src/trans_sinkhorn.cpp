@@ -140,6 +140,31 @@ void trans_sinkhorn(const refVecConst & mass_a, const refVecConst & mass_b,
   A = u.asDiagonal() * exp_cost * v.asDiagonal();
 }
 
+void trans_sinkhorn_self(vector & u, const refVecConst & mass_a,
+                    const matrix & exp_cost,
+                    double epsilon, int niterations) {
+  int N = mass_a.size();
+
+  vector ones_n = vector::Ones(N);
+  
+  vector u_old = ones_n; // first margins
+
+  
+  // matrix scaling
+  for ( int i = 0; i < niterations; i ++){
+    // row margins
+    u = mass_a.cwiseQuotient(exp_cost * u);
+    
+    // calc relative change in scaling vectors to see if approx converged
+    if (i % 10) {
+      if (sinkhorn_converge(u, u_old) <= epsilon) {
+        break;
+      }
+    }
+    u_old = u;
+  }
+}
+
 vector rowLogSumExp(matrix  Mat) {
   
   vector max = Mat.rowwise().maxCoeff();
