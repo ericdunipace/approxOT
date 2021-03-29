@@ -216,5 +216,7 @@ void argmin_f(const refVecConst & mass_a,
 // double median(RandAccessIter begin, RandAccessIter end);
 
 double median(refMat A);
+double median(const matrix & A);
+double median(matrix & A);
 
 #endif

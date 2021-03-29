@@ -361,3 +361,38 @@ transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
   return(list(tplan = tplan, cost = cost))
 }
 
+
+sinkhorn_pot <- function(mass_x, mass_y, p = 2, 
+                        cost=NULL,
+                        cost_a = NULL, cost_b = NULL, ...) {
+  
+  dots <- list(...)
+  epsilon <- as.double(dots$epsilon)
+  niter <- as.integer(dots$niter)
+  unbiased <- isTRUE(as.logical(dots$unbiased))
+  stopifnot(all(is.finite(cost)))
+  
+  if (unbiased && (is.null(cost_a) || is.null(cost_b))) {
+    stop("Must specify cost_a and cost_b for sinkhorn unbiased")
+  } else if(!unbiased) {
+    cost_a <- cost_b <- matrix(0.0,0,0)
+  }
+  
+  if (length(epsilon) == 0) epsilon <- as.double(0.05)
+  if (length(niter) == 0) {
+    niter <- as.integer(100)
+  }
+
+  if (is.null(cost) ) stop("Cost matrix must be provided")
+  
+  
+  pot <- sinkhorn_pot_(mass_x, mass_y, 
+                        cost^p, 
+                        epsilon, niter,
+                        unbiased,
+                        cost_a^p, 
+                        cost_b^p)
+  
+  return(pot)
+  
+}

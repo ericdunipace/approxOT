@@ -46,6 +46,14 @@ wasserstein <- function(X = NULL, Y = NULL, a= NULL, b = NULL, cost = NULL, tpla
     if (method == "sinkhorn" && isTRUE(list(...)$unbiased) ) {
       cost_a <- cost_a[nzero_a, nzero_a, drop = FALSE]
       cost_b <- cost_b[nzero_b, nzero_b, drop = FALSE]
+      
+      if(is.null(cost_a) || is.null(cost_b)) stop("Must specify cost matrices for both separate groups for unbiased sinkhorn.")
+      
+      pot <- sinkhorn_pot(mass_x = mass_x, mass_y = mass_y, p = p, 
+                          cost = cost, cost_a = cost_a, cost_b = cost_b, ...)
+      
+      return((sum(mass_x * pot$f) + sum(mass_y * pot$g))^(1/p))
+      
     }
     
     tplan <- transport_plan_given_C(mass_x, mass_y, p, cost, method, cost_a, cost_b, ...)
@@ -276,6 +284,15 @@ wasserstein_calc_cost <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
     # cost <- cost_calc(X, Y, ground_p)
     
     # if (method == "exact") {
+    if (isTRUE(list(...)$unbiased) && method == "sinkhorn" ) {
+      cost <- cost_calc(X,Y, ground_p)
+      cost_a <- cost_calc(X,X, ground_p)
+      cost_b <- cost_calc(Y,Y, ground_p)
+      pot <- sinkhorn_pot(mass_x = mass_x, mass_y = mass_y, p = p, 
+                          cost = cost, cost_a = cost_a, cost_b = cost_b, ...)
+      
+      return((sum(mass_x * pot$f) + sum(mass_y * pot$g))^(1/p))
+    }
       
       tp <- transport_plan(X = X, Y = Y, a = a, b = b, p = p, ground_p = ground_p,
                                     observation.orientation = obs, method = method, ...)

@@ -21,6 +21,10 @@ sinkhorn_ <- function(p_, q_, cost_matrix_, epsilon, niterations) {
     .Call('_approxOT_sinkhorn_', PACKAGE = 'approxOT', p_, q_, cost_matrix_, epsilon, niterations)
 }
 
+sinkhorn_pot_ <- function(mass_a, mass_b, cost_matrix, epsilon, niterations, unbiased, cost_matrix_A, cost_matrix_B) {
+    .Call('_approxOT_sinkhorn_pot_', PACKAGE = 'approxOT', mass_a, mass_b, cost_matrix, epsilon, niterations, unbiased, cost_matrix_A, cost_matrix_B)
+}
+
 transport_C_ <- function(mass_a_, mass_b_, cost_matrix_, method_, epsilon_, niter_, unbiased_, threads_, cost_matrix_A_, cost_matrix_B_) {
     .Call('_approxOT_transport_C_', PACKAGE = 'approxOT', mass_a_, mass_b_, cost_matrix_, method_, epsilon_, niter_, unbiased_, threads_, cost_matrix_A_, cost_matrix_B_)
 }

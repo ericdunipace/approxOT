@@ -295,7 +295,7 @@ testthat::test_that("unbiased sinkhorn works", {
   n <- 100
   d <- 5
   x <- matrix(rnorm(n*d), nrow=d, ncol=n)
-  y <- matrix(rnorm(n*d), nrow=d, ncol=n)# + matrix(5, d,n)
+  y <- matrix(rnorm(n*d), nrow=d, ncol=n) + matrix(5, d,n)
   
   
   exact <- approxOT::wasserstein(X = x, Y = y, p = 2,

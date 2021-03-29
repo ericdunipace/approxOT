@@ -4,11 +4,13 @@
 #include "approxOT_types.h"
 #include "utils.h"
 
-void trans_sinkhorn(const refVecConst & mass_a, const refVecConst & mass_b, 
-                    const matrix & exp_cost, 
+void trans_sinkhorn(const refVecConst & mass_a, const refVecConst & mass_b,
+                    const matrix & exp_cost,
                     matrix & A,
-                    double eta, double epsilon, int niterations);
-void trans_sinkhorn_self(vector & u, const refVecConst & mass_a,
+                    double eta, double epsilon, int niterations,
+                    vector & f, vector & g);
+void trans_sinkhorn_self(vector & f, const refVecConst & mass_a,
+                         double eta,
                          const matrix & exp_cost,
                          double epsilon, int niterations);
 void trans_sinkhorn_log(const refVecConst & mass_a, const refVecConst & mass_b,

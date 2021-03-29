@@ -104,7 +104,8 @@
 void trans_sinkhorn(const refVecConst & mass_a, const refVecConst & mass_b,
                     const matrix & exp_cost,
                     matrix & A,
-                    double eta, double epsilon, int niterations) {
+                    double eta, double epsilon, int niterations,
+                    vector & f, vector & g) {
   int N = mass_a.size();
   int M = mass_b.size();
 
@@ -114,8 +115,8 @@ void trans_sinkhorn(const refVecConst & mass_a, const refVecConst & mass_b,
   vector u = ones_n; // first margins
   vector v = ones_m; // second margins
   
-  vector u_old = ones_n; // first margins
-  vector v_old = ones_m; // second margins
+  vector u_old = u; // first margins
+  vector v_old = v; // second margins
   
   
   // matrix scaling
@@ -138,15 +139,19 @@ void trans_sinkhorn(const refVecConst & mass_a, const refVecConst & mass_b,
   
   // get approximate assignment matrix
   A = u.asDiagonal() * exp_cost * v.asDiagonal();
+  
+  f = u.array().log()/eta;
+  g = v.array().log()/eta;
 }
 
-void trans_sinkhorn_self(vector & u, const refVecConst & mass_a,
+void trans_sinkhorn_self(vector & f, const refVecConst & mass_a,
+                         double eta,
                     const matrix & exp_cost,
                     double epsilon, int niterations) {
   int N = mass_a.size();
 
   vector ones_n = vector::Ones(N);
-  
+  vector u = ones_n;
   vector u_old = ones_n; // first margins
 
   
@@ -163,6 +168,9 @@ void trans_sinkhorn_self(vector & u, const refVecConst & mass_a,
     }
     u_old = u;
   }
+  
+  f = u.array().log()/eta;
+  
 }
 
 vector rowLogSumExp(matrix  Mat) {
@@ -315,3 +323,59 @@ void trans_sinkhorn_autocorr(vector & f, const refVecConst & mass_a,
 //   // f = u.array().log() / eta;
 //   u_pot = u;
 // }
+
+
+//[[Rcpp::export]]
+Rcpp::List sinkhorn_pot_(const vector & mass_a, const vector & mass_b, 
+                         const matrix & cost_matrix, 
+                         double epsilon, int niterations,
+                         bool unbiased,
+                         const matrix & cost_matrix_A, 
+                         const matrix & cost_matrix_B) {
+  double med_cost = median(cost_matrix);
+  double eta = 1.0 / (epsilon * med_cost); //avoid underflow
+  // double eta = 4 * log(double(mass_a.size())) / epsilon;
+  const matrix exp_cost = (-eta * cost_matrix.array() ).exp();
+  double epsilon_prime = epsilon / (8 * cost_matrix.maxCoeff());
+  
+  
+  int N = mass_a.size();
+  int M = mass_b.size();
+  
+  matrix assign_mat = matrix::Zero(N,M);
+  
+  vector f = vector::Ones(N);
+  vector g = vector::Ones(M);
+  
+  
+  if (unbiased) {
+    const matrix exp_cost_a = (-eta * cost_matrix_A.array() ).exp();
+    const matrix exp_cost_b = (-eta * cost_matrix_B.array() ).exp();
+    vector p = vector::Ones(N);
+    vector p_unused = vector::Ones(N);
+    vector q = vector::Ones(M);
+    vector q_unused = vector::Ones(M);
+    matrix assign_mat_a = matrix::Zero(N,N);
+    matrix assign_mat_b = matrix::Zero(M,M);
+    
+    trans_sinkhorn(mass_a, mass_a, exp_cost_a, assign_mat_a, eta, epsilon_prime/2.0, niterations,
+                   p, p_unused);
+    trans_sinkhorn(mass_b, mass_b, exp_cost_b, assign_mat_b, eta, epsilon_prime/2.0, niterations,
+                   q_unused, q);
+    trans_sinkhorn(mass_a, mass_b, exp_cost, assign_mat, eta, epsilon_prime/2.0, niterations,
+                       f, g);
+    // Rcpp::Rcout << f << "\n";
+    // Rcpp::Rcout << g << "\n";
+    // Rcpp::Rcout << p << "\n";
+    // Rcpp::Rcout << q << "\n";
+    f = f - p;
+    g = g - q;
+    
+  } else {
+    trans_sinkhorn(mass_a, mass_b, exp_cost, assign_mat, eta, epsilon_prime/2.0, niterations,
+                   f, g);
+  }
+  
+  return(Rcpp::List::create(Rcpp::Named("f") = Rcpp::wrap(f),
+                            Rcpp::Named("g") = Rcpp::wrap(g)));
+}

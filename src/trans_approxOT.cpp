@@ -19,7 +19,8 @@ void trans_approxOT(const refVecConst & mass_a, const refVecConst & mass_b,
   // Rcpp::Rcout << " " << epsilon_prime;
   
   if (method == "sinkhorn") {
-    
+    vector u = vector::Zero(mass_a.rows());
+    vector v = vector::Zero(mass_b.rows());
     // if (unbiased) {
     //   const matrix exp_cost_a = (-eta * cost_matrix_A.array() ).exp();
     //   const matrix exp_cost_b = (-eta * cost_matrix_B.array() ).exp();
@@ -35,7 +36,8 @@ void trans_approxOT(const refVecConst & mass_a, const refVecConst & mass_b,
     //                      p, q);
     // 
     // } else {
-      trans_sinkhorn(mass_a, mass_b, exp_cost, assign_mat, eta, epsilon_prime/2.0, niterations);
+      trans_sinkhorn(mass_a, mass_b, exp_cost, assign_mat, eta, epsilon_prime/2.0, niterations,
+                     u, v);
     // }
     
 
