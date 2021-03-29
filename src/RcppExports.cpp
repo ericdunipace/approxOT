@@ -79,6 +79,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sinkhorn_pot_
+Rcpp::List sinkhorn_pot_(const vector& mass_a, const vector& mass_b, const matrix& cost_matrix, double epsilon, int niterations, bool unbiased, const matrix& cost_matrix_A, const matrix& cost_matrix_B);
+RcppExport SEXP _approxOT_sinkhorn_pot_(SEXP mass_aSEXP, SEXP mass_bSEXP, SEXP cost_matrixSEXP, SEXP epsilonSEXP, SEXP niterationsSEXP, SEXP unbiasedSEXP, SEXP cost_matrix_ASEXP, SEXP cost_matrix_BSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const vector& >::type mass_a(mass_aSEXP);
+    Rcpp::traits::input_parameter< const vector& >::type mass_b(mass_bSEXP);
+    Rcpp::traits::input_parameter< const matrix& >::type cost_matrix(cost_matrixSEXP);
+    Rcpp::traits::input_parameter< double >::type epsilon(epsilonSEXP);
+    Rcpp::traits::input_parameter< int >::type niterations(niterationsSEXP);
+    Rcpp::traits::input_parameter< bool >::type unbiased(unbiasedSEXP);
+    Rcpp::traits::input_parameter< const matrix& >::type cost_matrix_A(cost_matrix_ASEXP);
+    Rcpp::traits::input_parameter< const matrix& >::type cost_matrix_B(cost_matrix_BSEXP);
+    rcpp_result_gen = Rcpp::wrap(sinkhorn_pot_(mass_a, mass_b, cost_matrix, epsilon, niterations, unbiased, cost_matrix_A, cost_matrix_B));
+    return rcpp_result_gen;
+END_RCPP
+}
 // transport_C_
 Rcpp::List transport_C_(const Rcpp::NumericVector& mass_a_, const Rcpp::NumericVector& mass_b_, const Rcpp::NumericMatrix& cost_matrix_, const Rcpp::CharacterVector& method_, double epsilon_, int niter_, bool unbiased_, int threads_, const Rcpp::NumericMatrix& cost_matrix_A_, const Rcpp::NumericMatrix& cost_matrix_B_);
 RcppExport SEXP _approxOT_transport_C_(SEXP mass_a_SEXP, SEXP mass_b_SEXP, SEXP cost_matrix_SEXP, SEXP method_SEXP, SEXP epsilon_SEXP, SEXP niter_SEXP, SEXP unbiased_SEXP, SEXP threads_SEXP, SEXP cost_matrix_A_SEXP, SEXP cost_matrix_B_SEXP) {
@@ -185,6 +203,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_approxOT_multi_marg_given_dist_", (DL_FUNC) &_approxOT_multi_marg_given_dist_, 6},
     {"_approxOT_hilbert_proj_", (DL_FUNC) &_approxOT_hilbert_proj_, 1},
     {"_approxOT_sinkhorn_", (DL_FUNC) &_approxOT_sinkhorn_, 5},
+    {"_approxOT_sinkhorn_pot_", (DL_FUNC) &_approxOT_sinkhorn_pot_, 8},
     {"_approxOT_transport_C_", (DL_FUNC) &_approxOT_transport_C_, 10},
     {"_approxOT_transport_", (DL_FUNC) &_approxOT_transport_, 10},
     {"_approxOT_transport_swap_", (DL_FUNC) &_approxOT_transport_swap_, 8},
