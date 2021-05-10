@@ -4,11 +4,12 @@ Title: Approximate and exact optimal transport methods.
 Version: 0.1
 Date: 2021-02-17
 Author: Eric Dunipace
-Maintainer: Eric Dunipace <edunipace@g.harvard.edu>
+Maintainer: Eric Dunipace <edunipace@mail.harvard.edu>
 Description: R and C++ functions to perform exact and approximate optimal transport. All C++ methods are linkable to other R packages via their header files.
 License: GPL (2.0)
 Imports: Rcpp (>= 1.0.3), BH, RcppEigen, RcppCGAL
 LinkingTo: Rcpp, RcppEigen, RcppCGAL, BH
+BugReports: https://github.com/ericdunipace/approxOT/issues
 Suggests: 
     testthat (>= 2.1.0)
 RoxygenNote: 7.1.1
