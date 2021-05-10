@@ -7,6 +7,5 @@
 #' @useDynLib approxOT
 #' @importFrom Rcpp sourceCpp 
 #' @importFrom Rcpp evalCpp
-#' @import RcppEigen
 #' @rdname approxOT-package
 "_PACKAGE"
