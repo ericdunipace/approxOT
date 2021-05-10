@@ -90,6 +90,7 @@ testthat::test_that("wasserstein gives 0 for same distribution", {
 })
 
 testthat::test_that("wasserstein matches transport package for shortsimplex", {
+  testthat::skip_if_not_installed("transport")
   set.seed(11289374)
   n <- 100
   d <- 50
@@ -106,8 +107,10 @@ testthat::test_that("wasserstein matches transport package for shortsimplex", {
                                         costm = cost_calc(x,y, 2),
                                         method = "shortsimplex"
                                         )
-  uni <- approxOT::wasserstein(X = z, Y = w, 2, 2, "colwise", "univariate")
-  uni.trans <- transport::wasserstein1d(a = z, b = w, 2)
+  uni <- approxOT::wasserstein(X = z, Y = w, p = 2, ground_p = 2, 
+                               observation.orientation = "colwise",
+                               method = "univariate")
+  uni.trans <- transport::wasserstein1d(a = z, b = w, p = 2)
   
   testthat::expect_equal(exact, exact.trans)
   testthat::expect_equal(uni, uni.trans)
@@ -116,13 +119,16 @@ testthat::test_that("wasserstein matches transport package for shortsimplex", {
   exact.row <- approxOT::wasserstein(X = t(x), Y = t(y), p = 2,
                                         ground_p = 2, observation.orientation = "rowwise",
                                         method = "shortsimplex")
-  uni.row <- approxOT::wasserstein(X = t(t(z)), Y = t(t(w)), 2, 2, "rowwise", "univariate")
+  uni.row <- approxOT::wasserstein(X = t(t(z)), Y = t(t(w)), p = 2, ground_p = 2, 
+                                   observation.orientation = "rowwise", 
+                                   method = "univariate")
 
   testthat::expect_equal(exact.row, exact.trans)
   testthat::expect_equal(uni.row, uni.trans)
 })
 
 testthat::test_that("wasserstein matches transport package for networkflow", {
+  testthat::skip_if_not_installed("transport")
   set.seed(11289374)
   n <- 100
   d <- 50
@@ -139,7 +145,9 @@ testthat::test_that("wasserstein matches transport package for networkflow", {
                                         costm = cost_calc(x,y, 2),
                                         method = "networkflow"
   )
-  uni <- approxOT::wasserstein(X = z, Y = w, 2, 2, "colwise", "univariate")
+  uni <- approxOT::wasserstein(X = z, Y = w, p = 2, ground_p = 2, 
+                               observation.orientation = "colwise", 
+                               method = "univariate")
   uni.trans <- transport::wasserstein1d(a = z, b = w, 2)
   
   testthat::expect_equal(exact, exact.trans)
@@ -149,13 +157,18 @@ testthat::test_that("wasserstein matches transport package for networkflow", {
   exact.row <- approxOT::wasserstein(X = t(x), Y = t(y), p = 2,
                                      ground_p = 2, observation.orientation = "rowwise",
                                      method = "networkflow")
-  uni.row <- approxOT::wasserstein(X = t(t(z)), Y = t(t(w)), 2, 2, "rowwise", "univariate")
+  uni.row <- approxOT::wasserstein(X = t(t(z)), Y = t(t(w)), 
+                                   p = 2, ground_p = 2, 
+                                   observation.orientation = "rowwise", 
+                                   method = "univariate")
   
   testthat::expect_equal(exact.row, exact.trans)
   testthat::expect_equal(uni.row, uni.trans)
 })
 
 testthat::test_that("wasserstein matches transport package",{
+  testthat::skip_if_not_installed("transport")
+  testthat::skip_on_cran()
   set.seed(32857)
   A <- matrix(rnorm(1000*1024),nrow=1024,ncol=1000)
   B <- matrix(rnorm(1000*1024),nrow=1024,ncol=1000)
@@ -167,7 +180,7 @@ testthat::test_that("wasserstein matches transport package",{
   
   tplan <- transport_plan_given_C(mass_a, mass_b, 2, cost, "shortsimplex")
   
-  loss <- wasserstein_(tplan$mass, cost, p = 2, tplan$from, tplan$to)
+  loss <- approxOT:::wasserstein_(tplan$mass, cost, p = 2, tplan$from, tplan$to)
   
   loss_t <- transport::wasserstein(transport::pp(A),transport::pp(B),p=2, method = "shortsimplex")
   loss_t_def <- transport::wasserstein(mass_a,mass_b, tplan = data.frame(tplan), costm = cost, p=2, method = "shortsimplex")
@@ -184,7 +197,7 @@ testthat::test_that("wasserstein matches transport package",{
   mass_c <- rep(1/ncol(C),ncol(C))
   mass_d <- rep(1/ncol(D),ncol(D))
   tplan2 <- transport_plan_given_C(mass_c, mass_d, 2, cost2, "shortsimplex")
-  loss <- wasserstein_(tplan2$mass, cost2, p = 2, tplan2$from, tplan2$to)
+  loss <- approxOT:::wasserstein_(tplan2$mass, cost2, p = 2, tplan2$from, tplan2$to)
   loss_t_def <- transport::wasserstein(mass_c,mass_d, tplan = data.frame(tplan2), costm = cost2, p=2, method = "shortsimplex")
   testthat::expect_equivalent(loss, loss_t_def)
 })
@@ -199,16 +212,17 @@ testthat::test_that("make sure wass less than all other transports", {
   mass_a <- rep(1/ncol(at),ncol(at))
   mass_b <- rep(1/ncol(bt),ncol(bt))
   
-  tplan <- transport_plan_given_C(mass_a, mass_b, 2, cost, "shortsimplex")
+  tplan <- transport_plan_given_C(mass_a, mass_b, p = 2, cost = cost, 
+                                  method = "shortsimplex")
   
-  loss <- wasserstein_(tplan$mass, cost, p = 2, tplan$from, tplan$to)
-  hilbert <- wasserstein(at,bt, 2, 2, "colwise", "hilbert")
-  rank <- wasserstein(at,bt, 2, 2, "colwise", "rank")
-  uap <- wasserstein(at,bt, 2, 2, "colwise", "univariate.approximation.pwr")
-  sink <- wasserstein(at,bt, 2, 2, "colwise", "sinkhorn")
-  grnk <- wasserstein(at,bt, 2, 2, "colwise", "greenkhorn")
-  rand <- wasserstein(at,bt, 2, 2, "colwise", "randkhorn")
-  gand <- wasserstein(at,bt, 2, 2, "colwise", "gandkhorn")
+  loss <- approxOT:::wasserstein_(tplan$mass, cost, p = 2, tplan$from, tplan$to)
+  hilbert <- wasserstein(at,bt, p = 2, ground_p = 2, observation.orientation = "colwise", method = "hilbert")
+  rank <- wasserstein(at,bt, p = 2, ground_p = 2, observation.orientation = "colwise",  method = "rank")
+  uap <- wasserstein(at,bt, p = 2, ground_p = 2, observation.orientation = "colwise",  method = "univariate.approximation.pwr")
+  sink <- wasserstein(at,bt, p = 2, ground_p = 2, observation.orientation = "colwise",  method = "sinkhorn")
+  grnk <- wasserstein(at,bt, p = 2, ground_p = 2, observation.orientation = "colwise",  method = "greenkhorn")
+  rand <- wasserstein(at,bt, p = 2, ground_p = 2, observation.orientation = "colwise",  method = "randkhorn")
+  gand <- wasserstein(at,bt, p = 2, ground_p = 2, observation.orientation = "colwise",  method = "gandkhorn")
   
   testthat::expect_lt(loss, hilbert)
   testthat::expect_lt(loss, rank)
@@ -231,7 +245,7 @@ testthat::test_that("make sure sinkhorn outputs agree and are less than wass", {
   
   tplan <- transport_plan_given_C(mass_a, mass_b, 2, cost, "shortsimplex")
   
-  loss <- wasserstein_(tplan$mass, cost_ = cost, p = 2, tplan$from, tplan$to)
+  loss <- approxOT:::wasserstein_(tplan$mass, cost_ = cost, p = 2, tplan$from, tplan$to)
   sink <- wasserstein(X = A, Y = B, 
                       a = mass_a, b = mass_b, 
                       p = 2, ground_p = 2, cost = cost,

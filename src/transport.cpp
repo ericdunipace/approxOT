@@ -154,6 +154,7 @@ void transport(const matrix & A, const matrix & B, const double p, const double 
   int N = A.cols();
   int M = B.cols();
   bool univ = false;
+  
   if ( method == "univariate" || (A.rows() == 1 & B.rows() == 1 & N == M) ){
     univ = true;
   }
@@ -178,6 +179,7 @@ void transport(const matrix & A, const matrix & B, const double p, const double 
                idx, mass, ground_p,
                p, epsilon, niter);
   } else {
+    
     matrix cost_matrix(N,M);
     
     vector mass_a(N);
@@ -197,6 +199,7 @@ void transport(const matrix & A, const matrix & B, const double p, const double 
     
     matrix cost_matrix_A;
     matrix cost_matrix_B;
+    
     if (unbiased) {
       cost_matrix_A = matrix::Zero(N,N);
       cost_matrix_B = matrix::Zero(M,M);
@@ -211,8 +214,8 @@ void transport(const matrix & A, const matrix & B, const double p, const double 
         cost_calculation_Lp(B, B, cost_matrix_A, ground_p);
       }
     } else {
-      cost_matrix_A << 0.0;
-      cost_matrix_B << 0.0;
+      cost_matrix_A = matrix::Zero(0,0);
+      cost_matrix_B = matrix::Zero(0,0);
     }
     
     cost_matrix.array() = cost_matrix.array().pow(p).eval();
@@ -224,6 +227,7 @@ void transport(const matrix & A, const matrix & B, const double p, const double 
                 unbiased, threads
                 );
   }
+  
 }
 
 //[[Rcpp::export]]
@@ -278,8 +282,8 @@ Rcpp::List transport_(const Rcpp::NumericMatrix & A_,
   
   const std::string method(Rcpp::as<std::string>(method_(0)));
   
-  matrixI idx(N*M,2);
-  vector mass(N*M);
+  matrixI idx(N * M, 2);
+  vector mass(N * M);
   
   transport(A, B, p, ground_p,
             idx, mass, method, a_sort, epsilon_, niter_, 

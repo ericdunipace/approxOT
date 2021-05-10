@@ -16,6 +16,18 @@
 #   return(list(uncorrected = (sum(Phat * C^p))^(1/p), corrected = (sum(P * C^p))^(1/p)))
 # }
 
+#' Test sinkhorn distance
+#'
+#' @param mass_x empiric measure of first sample
+#' @param mass_y empiric measure of second sample
+#' @param cost cost matrix
+#' @param p power to raise the cost matrix by
+#' @param eps epsilon of cost matrix
+#' @param niter number of iterations
+#'
+#' @return a numeric value
+#'
+#' @keywords internal
 sinkhorn_distance <- function(mass_x, mass_y, cost = NULL, p = 1, eps = 0.05, niter = 100){
   costp <- cost^p
   epsilon <- eps * median(costp)
@@ -36,6 +48,17 @@ sinkhorn_distance <- function(mass_x, mass_y, cost = NULL, p = 1, eps = 0.05, ni
   return(list(uncorrected = (sum(Phat * costp))^(1/p), corrected = (sum(P * costp))^(1/p)))
 }
 
+#' Test sinkhorn transportation plan
+#'
+#' @param mass_x empiric measure of first sample
+#' @param mass_y empiric measure of second sample
+#' @param cost cost matrix
+#' @param eps epsilon of cost matrix
+#' @param niterations number of iterations
+#'
+#' @return transportation plan as list with slots "from","to", and "mass"
+#'
+#' @keywords internal
 sinkhorn_transport <- function(mass_x, mass_y, cost = NULL, eps = 0.05, niterations = 100){
   n1 <- length(mass_x)
   n2 <- length(mass_y)

@@ -1,3 +1,35 @@
+#' Calculate the Wasserstein distance
+#'
+#' @param X The covariate data of the first sample.
+#' @param Y The covariate data of the second sample.
+#' @param a Optional. Empirical measure of the first sample
+#' @param b Optional. Empirical measure of the second sample
+#' @param cost Specify the cost matrix in advance.
+#' @param tplan Give a transportation plan with slots "from", "to", and "mass", like that returned by the [tranportation_plan][transportation_plan] function.
+#' @param p The power of the Wasserstein distance
+#' @param ground_p The power of the Lp norm
+#' @param method 
+#' @param cost_a The cost matrix for the first sample with itself. Only used for unbiased Sinkhorn
+#' @param cost_b The cost matrix for the second sample with itself. Only used for unbiased Sinkhorn
+#' @param ... Additional arguments for various methods:
+#' \itemize{
+#' \item{"niter":}{ The number of iterations to use for the entropically penalized optimal transport distances}
+#' \item{"epsilon":}{ The multiple of the median cost to use as a penalty in the entropically penalized optimal transport distances}
+#' \item{"unbiased":}{ If using Sinkhorn distances, should the distance be de-biased? (TRUE/FALSE)}
+#' \item{"nboot":}{ If using sliced Wasserstein distances, specify the number of Monte Carlo samples}
+#' }
+#'
+#' @return A numeric value
+#' @export
+#'
+#' @examples
+#' set.seed(11289374)
+#' n <- 100
+#' z <- rnorm(n)
+#' w <- rnorm(n)
+#' uni <- approxOT::wasserstein(X = z, Y = w, p = 2, ground_p = 2, 
+#'                              observation.orientation = "colwise", 
+#'                              method = "univariate")
 wasserstein <- function(X = NULL, Y = NULL, a= NULL, b = NULL, cost = NULL, tplan = NULL, p = 2, ground_p = 2, 
                         method = transport_options(), 
                         cost_a = NULL, cost_b = NULL, ... ) {
@@ -237,6 +269,28 @@ wasserstein_calc_cost <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
     # loss <- c((((colSums(abs(X[, tp$tplan$from, drop = FALSE] - Y[, tp$tplan$to, drop=FALSE])^ground_p))^(1/ground_p))^p %*% tp$tplan$mass)^(1/p))
     loss <- tp$cost
   } else if (method == "sliced") {
+    
+    n1 <- ncol(X)
+    n2 <- ncol(Y)
+    
+    if (missing(a) || is.null(a)) {
+      # warning("assuming all points in first group have equal mass")
+      a <- as.double(rep(1/n1, n1))
+    }
+    if (missing(b) || is.null(b)) {
+      # warning("assuming all points in first group have equal mass")
+      b <- as.double(rep(1/n2, n2))
+    }
+    
+    nzero_a <- a != 0
+    nzero_b <- b != 0
+    
+    a <- a[nzero_a]
+    b <- b[nzero_b]
+    
+    X <- X[, nzero_a, drop = FALSE]
+    Y <- Y[, nzero_b, drop = FALSE]
+    
     dots <- list(...)
     tplan <- NULL
     nboot <- dots$nsim
@@ -251,7 +305,9 @@ wasserstein_calc_cost <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
       # y <- quantile(c(Y_theta[,i]), probs = u)
       x <- c(X_theta[,i])
       y <- c(Y_theta[,i])
-      trans <- general_1d_transport(t(x),t(y),"univariate")
+      trans <- general_1d_transport(X = t(x), Y = t(y),
+                                    a = a, b = b,
+                                    method = "univariate")
       cost <- ((abs(x[trans$from] - y[trans$to])^ground_p)^(1/ground_p))^p %*% trans$mass
       return(cost)
     }

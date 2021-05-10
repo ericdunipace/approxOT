@@ -12,7 +12,7 @@ testthat::test_that("multimarg cost, l2", {
   mass <- rep(1/n,n)
   p <- ground_p <- 2
   
-  cost <- multi_marg_final_cost_(indexes, datat, mass = mass,
+  cost <- approxOT:::multi_marg_final_cost_(indexes, datat, mass = mass,
                                    M = n, D = d, p = p, ground_p = ground_p)
   
   dists <- sqrt(weighted.mean(rowSums(abs(data[[1]][indexes[[1]],] - data[[2]][indexes[[2]],])^p) + 
@@ -38,7 +38,7 @@ testthat::test_that("multimarg cost, l1", {
   mass <- rep(1/n,n)
   p <- ground_p <- 1
   
-  cost <- multi_marg_final_cost_(indexes, datat, mass = mass,
+  cost <- approxOT:::multi_marg_final_cost_(indexes, datat, mass = mass,
                                  M = n, D = d, p = p, ground_p = ground_p)
   
   dists <- (weighted.mean(rowSums(abs(data[[1]][indexes[[1]],] - data[[2]][indexes[[2]],])^p) + 
@@ -64,7 +64,7 @@ testthat::test_that("multimarg cost, l3", {
   mass <- rep(1/n,n)
   p <- ground_p <- 3
   
-  cost <- multi_marg_final_cost_(indexes, datat, mass = mass,
+  cost <- approxOT:::multi_marg_final_cost_(indexes, datat, mass = mass,
                                  M = n, D = d, p = p, ground_p = ground_p)
   
   dists <- (weighted.mean(rowSums(abs(data[[1]][indexes[[1]],] - data[[2]][indexes[[2]],])^p) + 
@@ -95,7 +95,7 @@ testthat::test_that("multimarg transportation equal, hilbert", {
                               w = mass))
   
   # debugonce(transport_plan_multimarg)
-  tplan <- transport_plan_multimarg(data, p = p, ground_p = ground_p,
+  tplan <- approxOT::transport_plan_multimarg(data, p = p, ground_p = ground_p,
                            observation.orientation = "rowwise",
                            method = "hilbert")
   

@@ -6,23 +6,31 @@ testthat::test_that("transport univariate works", {
   y <- x[new.ord]
   order.y <- order(y)
   
-  trans <- transport_plan(x, y, 2, 2, "colwise", "univariate")
-  trans.sort <- transport_plan(x, y, 2, 2, "colwise", "univariate", is.A.sorted = TRUE)
-  trans.row <- transport_plan(t(t(x)), t(t(y)), 2, 2, "rowwise", "univariate")
-  trans.sort.row <- transport_plan(t(t(x)), t(t(y)), 2, 2, "rowwise", "univariate", is.A.sorted = TRUE)
+  trans <- transport_plan(x, y, p = 2, ground_p = 2, 
+                          observation.orientation = "colwise", 
+                          method = "univariate")
+  trans.sort <- transport_plan(x, y, p = 2, ground_p = 2, 
+                               observation.orientation = "colwise", 
+                               method = "univariate", is.A.sorted = TRUE)
+  trans.row <- transport_plan(t(t(x)), t(t(y)), p = 2, ground_p = 2, 
+                              observation.orientation = "rowwise", 
+                              method = "univariate")
+  trans.sort.row <- transport_plan(t(t(x)), t(t(y)), p = 2, ground_p = 2, 
+                                   observation.orientation = "rowwise", 
+                                   method = "univariate", is.A.sorted = TRUE)
   
-  expect_equal(trans$tplan$to, 1:n)
-  expect_equal(trans$tplan$from, new.ord)
-  expect_equal(trans$cost,0)
-  expect_equal(trans.sort$tplan$to, 1:n)
-  expect_equal(trans.sort$tplan$from, new.ord)
-  expect_equal(trans.sort$cost, 0)
-  expect_equal(trans.row$tplan$to, 1:n)
-  expect_equal(trans.row$tplan$from, new.ord)
-  expect_equal(trans.row$cost,0)
-  expect_equal(trans.sort.row$tplan$to, 1:n)
-  expect_equal(trans.sort.row$tplan$from, new.ord)
-  expect_equal(trans.sort.row$cost,0)
+  testthat::expect_equal(trans$tplan$to, 1:n)
+  testthat::expect_equal(trans$tplan$from, new.ord)
+  testthat::expect_equal(trans$cost,0)
+  testthat::expect_equal(trans.sort$tplan$to, 1:n)
+  testthat::expect_equal(trans.sort$tplan$from, new.ord)
+  testthat::expect_equal(trans.sort$cost, 0)
+  testthat::expect_equal(trans.row$tplan$to, 1:n)
+  testthat::expect_equal(trans.row$tplan$from, new.ord)
+  testthat::expect_equal(trans.row$cost,0)
+  testthat::expect_equal(trans.sort.row$tplan$to, 1:n)
+  testthat::expect_equal(trans.sort.row$tplan$from, new.ord)
+  testthat::expect_equal(trans.sort.row$cost,0)
 })
 
 testthat::test_that("transport hilbert works", {
@@ -288,34 +296,9 @@ testthat::test_that("transport_plan picks up errors", {
                                         observation.orientation = "colwise", method = "univariate"))
 })
 
-# testthat::test_that("speed of rank vs hilbert", {
-#   set.seed(3289174)
-#   n <- 1000
-#   d <- 50
-#   x <- matrix(rnorm(d*n), nrow=d, ncol=n)
-#   y <- matrix(rnorm(d*n), nrow=d, ncol=n)
-#   
-#   ranks <- microbenchmark::microbenchmark(transport_plan(X=y, Y=x, ground_p = 2, p=2, 
-#                                         observation.orientation = "colwise", method = "rank"), unit = "ms")
-#   hilbert <- microbenchmark::microbenchmark(transport_plan(X=y, Y=x, ground_p = 2, p=2, 
-#                                                          observation.orientation = "colwise", method = "hilbert"), unit = "ms")
-#   
-#   testthat::expect_equal(all(ranks$time > hilbert$time), TRUE)
-#   
-#   n <- 500
-#   d <- 10000
-#   x <- matrix(rnorm(d*n), nrow=d, ncol=n)
-#   y <- matrix(rnorm(d*n), nrow=d, ncol=n)
-#   
-#   ranks2 <- microbenchmark::microbenchmark(transport_plan(X=y, Y=x, ground_p = 2, p=2, 
-#                                                          observation.orientation = "colwise", method = "rank"), unit = "ms")
-#   hilbert2 <- microbenchmark::microbenchmark(transport_plan(X=y, Y=x, ground_p = 2, p=2, 
-#                                                            observation.orientation = "colwise", method = "hilbert"), unit = "ms")
-#   
-#   testthat::expect_equal(all(ranks2$time > hilbert2$time), TRUE)
-# })
-
 testthat::test_that("transport agrees with transport package shortsimplex", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not_installed("transport")
   set.seed(293897)
   A <- matrix(rnorm(100*256),nrow=256,ncol=100)
   B <- matrix(rnorm(100*256),nrow=256,ncol=100)
@@ -326,7 +309,10 @@ testthat::test_that("transport agrees with transport package shortsimplex", {
   bt <- t(B)
   # for(i in 1:1024) for(j in 1:1024) dist_check[i,j] <- sum((at[,i] - bt[,j])^2)
   # all.equal(c(dist_mat), c(dist_check))
-  indexes <- transport_(at, bt, 2.0, 2.0, "shortsimplex",FALSE)
+  indexes <- approxOT:::transport_(A_ = at, B_ = bt, p = 2.0, 
+                                   ground_p = 2.0, 
+                                   method_ = "shortsimplex",
+                                   a_sort = FALSE)
   # debugonce(transport::transport.pp)
   index_trans <- transport::transport(transport::pp(A),transport::pp(B),p=2, method = "shortsimplex")
   testthat::expect_equal(indexes$from, index_trans[["from"]])
@@ -336,7 +322,9 @@ testthat::test_that("transport agrees with transport package shortsimplex", {
   mass_a <- rep(1/ncol(at), ncol(at))
   mass_b <- rep(1/ncol(bt), ncol(bt))
   costm <- cost_calc(at,bt,2)
-  indexes2 <- transport_C_(mass_a, mass_b, costm^2, "shortsimplex", epsilon_ = 0.05, niter_=100, threads_ = 1)
+  indexes2 <- approxOT:::transport_C_(mass_a, mass_b, costm^2, "shortsimplex", epsilon_ = 0.05, 
+                                      niter_=100, unbiased_ = FALSE, threads_ = 1,
+                                      matrix(0,0,0), matrix(0,0,0))
   # check_sink <- sinkhorn_(mass_a, mass_b, costm^2, 0.05*median(costm^2), 100)
   # sum(check_sink$transportmatrix * costm^2)
   testthat::expect_equal(indexes2$from, index_trans[["from"]])
@@ -350,8 +338,10 @@ testthat::test_that("transport agrees with transport package shortsimplex", {
   mass_c <- rep(1/ncol(C), ncol(C))
   mass_d <- rep(1/ncol(D), ncol(D))
   
-  trans_sp <- transport_C_(mass_c, mass_d, costm^2, method = "shortsimplex", epsilon = 0.05, niter=100,
-                           threads_ = 1)
+  trans_sp <- approxOT:::transport_C_(mass_c, mass_d, costm^2, method_ = "shortsimplex", 
+                                      epsilon_ = 0.05, niter_ = 100L,
+                                      unbiased_ = FALSE, threads_ = 1,
+                                      matrix(0,0,0), matrix(0,0,0))
   # debugonce(transport::transport.default)
   trans_t <- transport::transport.default(a=mass_c, b=mass_d, costm=costm^2, method = "shortsimplex")
   testthat::expect_equal(trans_sp$from, trans_t$from)
@@ -361,8 +351,10 @@ testthat::test_that("transport agrees with transport package shortsimplex", {
   # microbenchmark::microbenchmark(transport_C_(mass_c, mass_d, costm^2, method = "shortsimplex"), unit = "us")
   
   trans_t <- transport::transport.default(a=mass_d, b=mass_c, costm=t(costm^2), method = "shortsimplex")
-  trans_sp <- transport_C_(mass_d, mass_c, t(costm^2), method = "shortsimplex", epsilon = 0.05, niter=100,
-                           threads_ = 1)
+  trans_sp <- approxOT:::transport_C_(mass_d, mass_c, t(costm^2), method = "shortsimplex", epsilon = 0.05, niter=100,
+                                                unbiased_ = FALSE,
+                           threads_ = 1,
+                           matrix(0,0,0), matrix(0,0,0))
   testthat::expect_equal(trans_sp$from, trans_t$from)
   testthat::expect_equal(trans_sp$to, trans_t$to)
   testthat::expect_equal(trans_sp$mass, trans_t$mass)
@@ -379,7 +371,8 @@ testthat::test_that("transport agrees with transport package networkflow", {
   bt <- t(B)
   # for(i in 1:1024) for(j in 1:1024) dist_check[i,j] <- sum((at[,i] - bt[,j])^2)
   # all.equal(c(dist_mat), c(dist_check))
-  indexes <- transport_(at, bt, 2.0, 2.0, "networkflow",FALSE)
+  indexes <- approxOT:::transport_(at, bt, 2.0, 2.0, 
+                                   "networkflow",FALSE)
   #reorder for transport package comparison
   ords <- order(indexes$from)
   indexes <- lapply(indexes, function(i) i[ords])
@@ -393,7 +386,9 @@ testthat::test_that("transport agrees with transport package networkflow", {
   mass_a <- rep(1/ncol(at), ncol(at))
   mass_b <- rep(1/ncol(bt), ncol(bt))
   costm <- cost_calc(at,bt,2)
-  indexes2 <- transport_C_(mass_a, mass_b, costm^2, "networkflow", epsilon_ = 0.05, niter_=256^2, threads_ = 1)
+  indexes2 <- approxOT:::transport_C_(mass_a, mass_b, costm^2, "networkflow", epsilon_ = 0.05, niter_=256^2, 
+                                      unbiased_ = FALSE, threads_ = 1,
+                                      matrix(0,0,0), matrix(0,0,0))
   ords2 <- order(indexes2$from)
   indexes2 <- lapply(indexes2, function(i) i[ords2])
   # check_sink <- sinkhorn_(mass_a, mass_b, costm^2, 0.05*median(costm^2), 100)
@@ -406,7 +401,9 @@ testthat::test_that("transport agrees with transport package networkflow", {
   mass_a <- rep(1/ncol(at), ncol(at))
   mass_b <- rep(1/ncol(bt), ncol(bt))
   costm <- cost_calc(at,bt,2)
-  indexes2 <- transport_C_(mass_a, mass_b, costm^2, "networkflow", epsilon_ = 0.05, niter_=0, threads_ = 1)
+  indexes2 <- approxOT:::transport_C_(mass_a, mass_b, costm^2, "networkflow", epsilon_ = 0.05, 
+                                      niter_=0, unbiased_ = FALSE, threads_ = 1,
+                                      matrix(0,0,0), matrix(0,0,0))
   ords2 <- order(indexes2$from)
   indexes2 <- lapply(indexes2, function(i) i[ords2])
   # check_sink <- sinkhorn_(mass_a, mass_b, costm^2, 0.05*median(costm^2), 100)
@@ -418,7 +415,9 @@ testthat::test_that("transport agrees with transport package networkflow", {
   mass_a <- rep(1/ncol(at), ncol(at))
   mass_b <- rep(1/ncol(bt), ncol(bt))
   costm <- cost_calc(at,bt,2)
-  testthat::expect_warning(indexes2 <- transport_C_(mass_a, mass_b, costm^2, "networkflow", epsilon_ = 0.05, niter_ = 10, threads_ = 1))
+  testthat::expect_warning(indexes2 <- approxOT:::transport_C_(mass_a, mass_b, costm^2, "networkflow", 
+                                                               epsilon_ = 0.05, niter_ = 10, unbiased_ = FALSE, threads_ = 1,
+                                                               matrix(0,0,0), matrix(0,0,0)))
   ords2 <- order(indexes2$from)
   indexes2 <- lapply(indexes2, function(i) i[ords2])
   # check_sink <- sinkhorn_(mass_a, mass_b, costm^2, 0.05*median(costm^2), 100)
@@ -435,8 +434,12 @@ testthat::test_that("transport agrees with transport package networkflow", {
   mass_c <- rep(1/ncol(C), ncol(C))
   mass_d <- rep(1/ncol(D), ncol(D))
   
-  trans_sp <- transport_C_(mass_c, mass_d, costm^2, method_ = "networkflow", epsilon_ = 0.05, niter_ = 0,
-                           threads_ = 1)
+  trans_sp <- approxOT:::transport_C_(mass_c, mass_d, costm^2, method_ = "networkflow", 
+                                      epsilon_ = 0.05, niter_ = 0,
+                                      unbiased_ = FALSE,
+                                      threads_ = 1, 
+                           cost_matrix_A_ = matrix(0,0,0), 
+                           cost_matrix_B_ = matrix(0,0,0))
   ords3 <- order(trans_sp$from)
   trans_sp <- lapply(trans_sp, function(i) i[ords3])
   # debugonce(transport::transport.default)
@@ -448,23 +451,29 @@ testthat::test_that("transport agrees with transport package networkflow", {
   # microbenchmark::microbenchmark(transport_C_(mass_c, mass_d, costm^2, method = "shortsimplex"), unit = "us")
   
   trans_t <- transport::transport.default(a=mass_d, b=mass_c, costm=t(costm^2), method = "networkflow")
-  trans_sp <- transport_C_(mass_d, mass_c, t(costm^2), method = "networkflow", epsilon = 0.05, niter=0,
-                           threads_ = 1)
+  trans_sp <- approxOT:::transport_C_(mass_d, mass_c, t(costm^2), 
+                                      method = "networkflow", epsilon = 0.05, niter=0,
+                           unbiased_ = FALSE,
+                           threads_ = 1,
+                           cost_matrix_A_ = matrix(0,0,0), 
+                           cost_matrix_B_ = matrix(0,0,0))
   ords4 <- order(trans_sp$from)
   trans_sp <- lapply(trans_sp, function(i) i[ords4])
   testthat::expect_equal(trans_sp$from, trans_t$from)
   testthat::expect_equal(trans_sp$to, trans_t$to)
   testthat::expect_equal(trans_sp$mass, trans_t$mass)
   
-  trans_sp <- transport_C_(mass_d, mass_c, t(costm^2), method = "exact", epsilon = 0.05, niter=0,
-                           threads_ = 1)
+  trans_sp <- approxOT:::transport_C_(mass_d, mass_c, t(costm^2), method = "exact", epsilon = 0.05, niter=0,
+                                      unbiased_ = FALSE,
+                           threads_ = 1, 
+                           cost_matrix_A_ = matrix(0,0,0), 
+                           cost_matrix_B_ = matrix(0,0,0))
   ords4 <- order(trans_sp$from)
   trans_sp <- lapply(trans_sp, function(i) i[ords4])
   testthat::expect_equal(trans_sp$from, trans_t$from)
   testthat::expect_equal(trans_sp$to, trans_t$to)
   testthat::expect_equal(trans_sp$mass, trans_t$mass)
 })
-
 
 testthat::test_that("sinkhorn works", {
   set.seed(12308947)
@@ -476,8 +485,14 @@ testthat::test_that("sinkhorn works", {
   transp.meth <- "sinkhorn"
   niter = 1e2
   
-  trans <- transport_plan(A, B, 2, 2, "colwise", transp.meth, niter = niter)
-  trans.row <- transport_plan(t(A), t(B), 2, 2, "rowwise", transp.meth, niter = niter)
+  trans <- transport_plan(A, B, 
+                          ground_p = 2, p = 2, 
+                          observation.orientation = "colwise", 
+                          method = transp.meth, niter = niter)
+  trans.row <- transport_plan(t(A), t(B), 
+                              ground_p = 2, p = 2, 
+                              obsrevation.orientation = "rowwise", 
+                              method = transp.meth, niter = niter)
   transtest <- transport_plan_given_C(rep(1/n,n), rep(1/n,n),  2, cost = cost_calc(A,B,2), "sinkhorn2", niter = niter)
 
   testthat::expect_true((1/n) %in% tapply(trans$tplan$mass, trans$tplan$to, sum))
@@ -496,8 +511,14 @@ testthat::test_that("greenkhorn works", {
   transp.meth <- "greenkhorn"
   niter = 1e2
   
-  trans <- transport_plan(A, B, 2, 2, "colwise", transp.meth, niter = niter)
-  trans.row <- transport_plan(t(A), t(B), 2, 2, "rowwise", transp.meth, niter = niter)
+  trans <- transport_plan(A, B, p = 2, ground_p = 2, 
+                          observation.orientation = "colwise", 
+                          method = transp.meth, niter = niter)
+  trans.row <- transport_plan(t(A), t(B), 
+                              ground_p = 2, 
+                              p = 2, 
+                              observation.orientation = "rowwise", 
+                              method = transp.meth, niter = niter)
   transtest <- transport_plan_given_C(rep(1/n,n), rep(1/n,n),  2, cost = cost_calc(A,B,2), "sinkhorn", niter = niter)
   
   testthat::expect_true((1/n) %in% tapply(trans$tplan$mass, trans$tplan$to, sum))
@@ -516,13 +537,20 @@ testthat::test_that("randkhorn works", {
   transp.meth <- "randkhorn"
   niter = 1e2
   
-  trans <- transport_plan(A, B, 2, 2, "colwise", transp.meth, niter = niter)
-  trans.row <- transport_plan(t(A), t(B), 2, 2, "rowwise", transp.meth, niter = niter)
-  transtest <- transport_plan_given_C(rep(1/n,n), rep(1/n,n),  2, cost = cost_calc(A,B,2), "sinkhorn", niter = niter)
+  trans <- transport_plan(A, B, 
+                          p = 2, 
+                          ground_p = 2, 
+                          observation.orientation = "colwise", 
+                          method = transp.meth, niter = niter)
+  trans.row <- transport_plan(t(A), t(B), 
+                              p = 2, ground_p = 2, 
+                              observation.orientation = "rowwise",
+                              method = transp.meth, niter = niter)
+  transtest <- transport_plan_given_C(rep(1/n,n), rep(1/n,n),  p = 2, cost = cost_calc(A,B,2), method = "sinkhorn", niter = niter)
   
   testthat::expect_true((1/n) %in% tapply(trans$tplan$mass, trans$tplan$to, sum))
   testthat::expect_true((1/n) %in% tapply(trans.row$tplan$mass, trans.row$tplan$to, sum))
-  testthat::expect_lte(sum((transtest$mass-trans$tplan$mass)^2), 1e-7)
+  testthat::expect_lte(sum((transtest$mass-trans$tplan$mass)^2), 1e-6)
   
 })
 
@@ -536,9 +564,16 @@ testthat::test_that("gandkhorn works", {
   transp.meth <- "gandkhorn"
   niter = 1e2
   
-  trans <- transport_plan(A, B, 2, 2, "colwise", transp.meth, niter = niter)
-  trans.row <- transport_plan(t(A), t(B), 2, 2, "rowwise", transp.meth, niter = niter)
-  transtest <- transport_plan_given_C(rep(1/n,n), rep(1/n,n),  2, cost = cost_calc(A,B,2), "greenkhorn", niter = niter)
+  trans <- transport_plan(A, B, 
+                          p = 2, ground_p = 2,
+                          observation.orientation = "colwise", 
+                          method = transp.meth, niter = niter)
+  trans.row <- transport_plan(t(A), t(B), 
+                              p = 2, ground_p = 2, 
+                              observation.orientation = "rowwise", 
+                              method = transp.meth, niter = niter)
+  transtest <- transport_plan_given_C(rep(1/n,n), rep(1/n,n),  p = 2, 
+                                      cost = cost_calc(A,B,2), method = "greenkhorn", niter = niter)
 
   testthat::expect_true((1/n) %in% tapply(trans$tplan$mass, trans$tplan$to, sum))
   testthat::expect_true((1/n) %in% tapply(trans.row$tplan$mass, trans.row$tplan$to, sum))

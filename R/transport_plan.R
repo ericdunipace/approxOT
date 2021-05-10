@@ -1,3 +1,31 @@
+#' Optimal transport plans given a pre-specified cost
+#'
+#' @param mass_x The empirical measure of the first sample
+#' @param mass_y The empirical measure of the second sample.
+#' @param p The power of the Wasserstein distance
+#' @param cost Specify the cost matrix in advance.
+#' @param method The transportation method to use, one of "exact","networkflow","shortsimplex","sinkhorn","greenkhorn", "randkhorn", "gandkhorn"
+#' @param cost_a The cost matrix for the first sample with itself. Only used for unbiased Sinkhorn
+#' @param cost_b The cost matrix for the second sample with itself. Only used for unbiased Sinkhorn
+#' @param ... Additional arguments for various methods:
+#' \itemize{
+#' \item{"niter":}{ The number of iterations to use for the entropically penalized optimal transport distances}
+#' \item{"epsilon":}{ The multiple of the median cost to use as a penalty in the entropically penalized optimal transport distances}
+#' \item{"unbiased":}{ If using Sinkhorn distances, should the distance be de-biased? (TRUE/FALSE)}
+#' }
+#'
+#' @return A transportation plan as a list with slots "from","to", and "mass".
+#' @export
+#'
+#' @examples
+#' n <- 32
+#' d <- 5
+#' set.seed(293897)
+#' A <- matrix(rnorm(n*d),nrow=d,ncol=n)
+#' B <- matrix(rnorm(n*d),nrow=d,ncol=n)
+#' transp.meth <- "sinkhorn"
+#' niter <- 1e2
+#' test <- transport_plan_given_C(rep(1/n,n), rep(1/n,n),  2, cost = cost_calc(A,B,2), "sinkhorn", niter = niter)
 transport_plan_given_C <- function(mass_x, mass_y, p = 2, 
                                    cost=NULL, method = "exact", 
                                    cost_a = NULL, cost_b = NULL, ...) {
@@ -66,6 +94,37 @@ transport_plan_given_C <- function(mass_x, mass_y, p = 2,
   
 }
 
+#' Optimal transport plans
+#'
+#' @param X The covariate data of the first sample.
+#' @param Y The covariate data of the second sample.
+#' @param a Optional. Empirical measure of the first sample
+#' @param b Optional. Empirical measure of the second sample
+#' @param p The power of the Wasserstein distance
+#' @param ground_p The power of the Lp norm
+#' @param observation.orientation Are observations by row ("rowwise") or column ("colwise").
+#' @param method Which transportation method to use. See [transport_options][transport_options]
+#' @param ... Additional arguments for various methods:
+#' \itemize{
+#' \item{"niter":}{ The number of iterations to use for the entropically penalized optimal transport distances}
+#' \item{"epsilon":}{ The multiple of the median cost to use as a penalty in the entropically penalized optimal transport distances}
+#' \item{"unbiased":}{ If using Sinkhorn distances, should the distance be de-biased? (TRUE/FALSE)}
+#' \item{"nboot":}{ If using sliced Wasserstein distances, specify the number of Monte Carlo samples}
+#' }
+#'
+#' @return a list with slots "tplan" and "cost". "tplan" is the optimal transport plan and "cost" is the optimal transport distance.
+#' @export
+#'
+#' @examples
+#' set.seed(203987)
+#' n <- 100
+#' d <- 10
+#' x <- matrix(rnorm(d*n), nrow=d, ncol=n)
+#' y <- matrix(rnorm(d*n), nrow=d, ncol=n)
+#' #get hilbert sort orders for x in backwards way
+#' transx <- transport_plan(X=x, Y=x, ground_p = 2, p = 2, 
+#'                          observation.orientation =  "colwise", 
+#'                          method = "hilbert")
 transport_plan <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
                            observation.orientation = c("rowwise", "colwise"), 
                            method = transport_options(), ... ) {
@@ -213,6 +272,26 @@ transport_plan <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
   
 }
 
+#' One-dimensional optimal transport for measures with more general mass
+#'
+#' @param X Data for sample one. Should be a vector if method is "univariate" or a matrix if method is "hilbert"
+#' @param Y Data for sample two Should be a vector if method is "univariate" or a matrix if method is "hilbert"
+#' @param a Empirical measure for sample one.
+#' @param b Empirical measure for sample two.
+#' @param method One of "hilbert" or "univariate"
+#'
+#' @return An optimal transportation plan as a list with slots "from", "to", and "mass"
+#' @export
+#'
+#' @examples
+#' set.seed(23423)
+#' n <- 100
+#' d <- 10
+#' x <- matrix(rnorm((n + 11)*d), n + 11 , d)
+#' y <- matrix(rnorm(n*d), n, d)
+#' 
+#' trans <- general_1d_transport(t(x), t(y))
+#' @keywords internal
 general_1d_transport <- function(X, Y, a = NULL, b = NULL, method = c("hilbert", "univariate")) {
   method <- match.arg(method)
   
@@ -290,6 +369,37 @@ general_hilbert_transport <- function(X, Y) {
   # test <- data.frame(from = a_idx, to = b_idx, mass = mass)
 }
 
+#' Multimarginal optimal transport plans
+#'
+#' @param ... Either data matrices as separate arguments or a list of data matrices. Arguments after the data must be specified by name.
+#' @param p The power of the Wasserstein distance to use
+#' @param ground_p The power of the Euclidean distance to use
+#' @param observation.orientation Are observations by rows or columns
+#' @param method One of "hilbert", "univariate", or "sliced"
+#' @param nsim Number of simulations to use for the sliced method
+#'
+#' @return transport plan
+#' @export
+#' 
+#' @examples 
+#' set.seed(23423)
+#' n <- 100
+#' d <- 10
+#' x <- matrix(rnorm((n + 11)*d), n + 11 , d)
+#' y <- matrix(rnorm(n*d), n, d)
+#' z <- matrix(rnorm((n +455)*d), n +455, d)
+#' 
+#' # make data a list
+#' data <- list(x,y,z)
+#' 
+#' tplan <- transport_plan_multimarg(data, p = p, ground_p = ground_p,
+#' observation.orientation = "rowwise",method = "hilbert")
+#' 
+#' #' #transpose data works too
+#' datat <- lapply(data, t)
+#' 
+#' tplan2 <- transport_plan_multimarg(datat, p = p, ground_p = ground_p,
+#' observation.orientation = "colwise",method = "hilbert")
 transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
                                observation.orientation = c("rowwise", "colwise"), 
                                method = c("hilbert", "univariate", "sliced"),
@@ -323,7 +433,7 @@ transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
   cost <- tplan <- NULL
   
   if(method == "hilbert") {
-    idx <- lapply(data, approxOT::hilbert_proj_)
+    idx <- lapply(data, approxOT:::hilbert_proj_)
     idx <- lapply(idx, "+", 1L)
   } else if (method == "univariate") {
     idx <- lapply(data, order)
@@ -362,6 +472,20 @@ transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
 }
 
 
+#' Return the dual potentials for the Sinkhorn distance
+#'
+#' @param mass_x 
+#' @param mass_y 
+#' @param p 
+#' @param cost 
+#' @param cost_a 
+#' @param cost_b 
+#' @param ... 
+#'
+#' @return
+#' @export
+#'
+#' @keywords internal
 sinkhorn_pot <- function(mass_x, mass_y, p = 2, 
                         cost=NULL,
                         cost_a = NULL, cost_b = NULL, ...) {
