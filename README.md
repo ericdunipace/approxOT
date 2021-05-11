@@ -1,4 +1,4 @@
-# Approximate and Exact Optimal Transport Distances
+# approxOT: Approximate and Exact Optimal Transport Distances
 
 This [R](https://www.r-project.org) package performs the computation of approximate and exact optimal transport distances 
 through a variety of algorithms. We also provide header files
@@ -12,7 +12,7 @@ from Github using `devtools::install_github`.
 The package currently supports the following algorithms to calculate optimal transport distances
 1.  "exact" or "networkflow": utilizes a network flow algorithm to calculate *exact* optimal transport distances
 2. "shortsimplex": uses the shortlist method of Gottschlich
-and Schuhmacher (2014) to calculate an *exact*
+and Schuhmacher (2014) to calculate an *exact* optimal transport distance.
 3. "univariate": uses the exact method special to the univariate case.
 4.  "sinkhorn": use the Sinkhorn distance method of Cuturi (2013) 
 to calculate entropically regularized optimal transport distances.
