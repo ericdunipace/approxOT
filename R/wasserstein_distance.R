@@ -8,7 +8,7 @@
 #' @param tplan Give a transportation plan with slots "from", "to", and "mass", like that returned by the [tranportation_plan][transportation_plan] function.
 #' @param p The power of the Wasserstein distance
 #' @param ground_p The power of the Lp norm
-#' @param method 
+#' @param method Which transportation method to use. See [transport_options][transport_options]
 #' @param cost_a The cost matrix for the first sample with itself. Only used for unbiased Sinkhorn
 #' @param cost_b The cost matrix for the second sample with itself. Only used for unbiased Sinkhorn
 #' @param ... Additional arguments for various methods:
@@ -19,17 +19,18 @@
 #' \item{"nboot":}{ If using sliced Wasserstein distances, specify the number of Monte Carlo samples}
 #' }
 #'
-#' @return A numeric value
+#' @return The p-Wasserstein distance, a numeric value
 #' @export
 #'
 #' @examples
 #' set.seed(11289374)
 #' n <- 100
-#' z <- rnorm(n)
-#' w <- rnorm(n)
-#' uni <- approxOT::wasserstein(X = z, Y = w, p = 2, ground_p = 2, 
-#'                              observation.orientation = "colwise", 
-#'                              method = "univariate")
+#' z <- stats::rnorm(n)
+#' w <- stats::rnorm(n)
+#' uni <- approxOT::wasserstein(X = z, Y = w, 
+#' p = 2, ground_p = 2, 
+#' observation.orientation = "colwise", 
+#' method = "univariate")
 wasserstein <- function(X = NULL, Y = NULL, a= NULL, b = NULL, cost = NULL, tplan = NULL, p = 2, ground_p = 2, 
                         method = transport_options(), 
                         cost_a = NULL, cost_b = NULL, ... ) {

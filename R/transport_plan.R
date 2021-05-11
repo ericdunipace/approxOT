@@ -25,7 +25,9 @@
 #' B <- matrix(rnorm(n*d),nrow=d,ncol=n)
 #' transp.meth <- "sinkhorn"
 #' niter <- 1e2
-#' test <- transport_plan_given_C(rep(1/n,n), rep(1/n,n),  2, cost = cost_calc(A,B,2), "sinkhorn", niter = niter)
+#' test <- transport_plan_given_C(rep(1/n,n), 
+#' rep(1/n,n),  2, cost = cost_calc(A,B,2), 
+#' "sinkhorn", niter = niter)
 transport_plan_given_C <- function(mass_x, mass_y, p = 2, 
                                    cost=NULL, method = "exact", 
                                    cost_a = NULL, cost_b = NULL, ...) {
@@ -474,15 +476,20 @@ transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
 
 #' Return the dual potentials for the Sinkhorn distance
 #'
-#' @param mass_x 
-#' @param mass_y 
-#' @param p 
-#' @param cost 
-#' @param cost_a 
-#' @param cost_b 
-#' @param ... 
+#' @param mass_x The empirical distribution of the first sample
+#' @param mass_y The empirical distribution of the second sample
+#' @param p The power to raise the cost by
+#' @param cost The cost matrix between first and second samples
+#' @param cost_a The cost matrix for the first sample
+#' @param cost_b The cost matrix for the second sample
+#' @param ... Additional arguments including
+#' \itemize{
+#' \item epsilon The fraction of the median cost to use as a penalty
+#' \item niter Number of iterations to run the Sinkhorn algorithm
+#' \item unbiased Should the potentials be de-biased TRUE/FALSE
+#' }
 #'
-#' @return
+#' @return A list with slots "f" and "g", the potentals of the rows and margins, respectively.
 #' @export
 #'
 #' @keywords internal

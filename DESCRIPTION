@@ -1,6 +1,6 @@
 Package: approxOT
 Type: Package
-Title: Approximate and exact optimal transport methods.
+Title: Approximate and exact optimal transport methods
 Version: 0.1
 Date: 2021-02-17
 Author: Eric Dunipace

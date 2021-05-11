@@ -1,3 +1,3 @@
 .onUnload <- function (libpath) {
-  library.dynam.unload("limbs", libpath)
+  library.dynam.unload("approxOT", libpath)
 }
