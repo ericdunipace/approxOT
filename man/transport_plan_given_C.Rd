@@ -51,5 +51,7 @@ A <- matrix(rnorm(n*d),nrow=d,ncol=n)
 B <- matrix(rnorm(n*d),nrow=d,ncol=n)
 transp.meth <- "sinkhorn"
 niter <- 1e2
-test <- transport_plan_given_C(rep(1/n,n), rep(1/n,n),  2, cost = cost_calc(A,B,2), "sinkhorn", niter = niter)
+test <- transport_plan_given_C(rep(1/n,n), 
+rep(1/n,n),  2, cost = cost_calc(A,B,2), 
+"sinkhorn", niter = niter)
 }

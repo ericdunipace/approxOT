@@ -1,6 +1,11 @@
 #include "../inst/include/approxOT_types.h"
 #include "../inst/include/hilbert_cgal.h"
 
+//' Returns orders along the Hilbert space-filling Curve
+//'
+//' @param A a matrix of data-values of class Eigen::MatrixXd
+//' @return An integer vector of orders
+//' @keywords internal
 // [[Rcpp::export]]
 Rcpp::IntegerVector hilbert_proj_(const matrix & A)
 {

@@ -484,9 +484,9 @@ transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
 #' @param cost_b The cost matrix for the second sample
 #' @param ... Additional arguments including
 #' \itemize{
-#' \item epsilon The fraction of the median cost to use as a penalty
-#' \item niter Number of iterations to run the Sinkhorn algorithm
-#' \item unbiased Should the potentials be de-biased TRUE/FALSE
+#' \item epsilon: The fraction of the median cost to use as a penalty
+#' \item niter: Number of iterations to run the Sinkhorn algorithm
+#' \item unbiased: Should the potentials be de-biased TRUE/FALSE
 #' }
 #'
 #' @return A list with slots "f" and "g", the potentals of the rows and margins, respectively.

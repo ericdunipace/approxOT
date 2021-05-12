@@ -36,7 +36,7 @@ wasserstein(
 
 \item{ground_p}{The power of the Lp norm}
 
-\item{method}{}
+\item{method}{Which transportation method to use. See [transport_options][transport_options]}
 
 \item{cost_a}{The cost matrix for the first sample with itself. Only used for unbiased Sinkhorn}
 
@@ -51,7 +51,7 @@ wasserstein(
 }}
 }
 \value{
-A numeric value
+The p-Wasserstein distance, a numeric value
 }
 \description{
 Calculate the Wasserstein distance
@@ -59,9 +59,10 @@ Calculate the Wasserstein distance
 \examples{
 set.seed(11289374)
 n <- 100
-z <- rnorm(n)
-w <- rnorm(n)
-uni <- approxOT::wasserstein(X = z, Y = w, p = 2, ground_p = 2, 
-                             observation.orientation = "colwise", 
-                             method = "univariate")
+z <- stats::rnorm(n)
+w <- stats::rnorm(n)
+uni <- approxOT::wasserstein(X = z, Y = w, 
+p = 2, ground_p = 2, 
+observation.orientation = "colwise", 
+method = "univariate")
 }

@@ -19,6 +19,6 @@ Get order along the Hilbert curve
 }
 \examples{
 X <- matrix(rnorm(10*3), 3, 10)
-idx <- hilber.projection(X)
+idx <- hilbert.projection(X)
 print(idx)
 }

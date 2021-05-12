@@ -8,6 +8,13 @@
 \description{
 R and C++ functions to perform exact and approximate optimal transport. All C++ methods are linkable to other R packages via their header files.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item Report bugs at \url{https://github.com/ericdunipace/approxOT/issues}
+}
+
+}
 \author{
 Eric Dunipace
 }

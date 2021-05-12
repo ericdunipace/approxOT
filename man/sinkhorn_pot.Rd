@@ -15,22 +15,27 @@ sinkhorn_pot(
 )
 }
 \arguments{
-\item{mass_x}{}
+\item{mass_x}{The empirical distribution of the first sample}
 
-\item{mass_y}{}
+\item{mass_y}{The empirical distribution of the second sample}
 
-\item{p}{}
+\item{p}{The power to raise the cost by}
 
-\item{cost}{}
+\item{cost}{The cost matrix between first and second samples}
 
-\item{cost_a}{}
+\item{cost_a}{The cost matrix for the first sample}
 
-\item{cost_b}{}
+\item{cost_b}{The cost matrix for the second sample}
 
-\item{...}{}
+\item{...}{Additional arguments including
+\itemize{
+\item epsilon: The fraction of the median cost to use as a penalty
+\item niter: Number of iterations to run the Sinkhorn algorithm
+\item unbiased: Should the potentials be de-biased TRUE/FALSE
+}}
 }
 \value{
-
+A list with slots "f" and "g", the potentals of the rows and margins, respectively.
 }
 \description{
 Return the dual potentials for the Sinkhorn distance

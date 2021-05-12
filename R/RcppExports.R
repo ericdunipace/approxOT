@@ -13,6 +13,11 @@ multi_marg_given_dist_ <- function(idx_, mass_, cost_, M, N_cost, p) {
     .Call('_approxOT_multi_marg_given_dist_', PACKAGE = 'approxOT', idx_, mass_, cost_, M, N_cost, p)
 }
 
+#' Returns orders along the Hilbert space-filling Curve
+#'
+#' @param A a matrix of data-values of class Eigen::MatrixXd
+#' @return An integer vector of orders
+#' @keywords internal
 hilbert_proj_ <- function(A) {
     .Call('_approxOT_hilbert_proj_', PACKAGE = 'approxOT', A)
 }
