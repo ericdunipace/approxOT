@@ -7,9 +7,9 @@ Author: Eric Dunipace
 Maintainer: Eric Dunipace <edunipace@mail.harvard.edu>
 Description: R and C++ functions to perform exact and approximate optimal transport. All C++ methods are linkable to other R packages via their header files.
 License: GPL (>=3.0)
-Imports: Rcpp (>= 1.0.3), BH, RcppEigen, RcppCGAL
+Imports: Rcpp (>= 1.0.3), BH, RcppEigen, RcppCGAL, stats
 LinkingTo: Rcpp, RcppEigen, RcppCGAL, BH
 BugReports: https://github.com/ericdunipace/approxOT/issues
 Suggests: 
-    testthat (>= 2.1.0)
+    testthat (>= 2.1.0), transport
 RoxygenNote: 7.1.1

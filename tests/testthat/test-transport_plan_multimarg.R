@@ -133,12 +133,14 @@ testthat::test_that("multimarg transportation equal, univariate", {
 })
 
 testthat::test_that("multimarg transportation unequal, hilbert", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not_installed("transport")
   set.seed(23423)
   n <- 100
   d <- 10
   x <- matrix(rnorm((n + 11)*d), n + 11 , d)
   y <- matrix(rnorm(n*d), n, d)
-  z <- matrix(rnorm((n +455)*d), n +455, d)
+  z <- matrix(rnorm((n +455)*d), n + 455, d)
   
   data <- list(x,y,z)
   datat <- lapply(data, t)
@@ -170,6 +172,8 @@ testthat::test_that("multimarg transportation unequal, hilbert", {
 })
 
 testthat::test_that("multimarg transportation unequal, univariate", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not_installed("transport")
   set.seed(23423)
   n <- 100
   d <- 1

@@ -47,8 +47,8 @@ Optimal transport plans given a pre-specified cost
 n <- 32
 d <- 5
 set.seed(293897)
-A <- matrix(rnorm(n*d),nrow=d,ncol=n)
-B <- matrix(rnorm(n*d),nrow=d,ncol=n)
+A <- matrix(stats::rnorm(n*d),nrow=d,ncol=n)
+B <- matrix(stats::rnorm(n*d),nrow=d,ncol=n)
 transp.meth <- "sinkhorn"
 niter <- 1e2
 test <- transport_plan_given_C(rep(1/n,n), 

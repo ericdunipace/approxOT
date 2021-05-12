@@ -36,15 +36,16 @@ Multimarginal optimal transport plans
 set.seed(23423)
 n <- 100
 d <- 10
-x <- matrix(rnorm((n + 11)*d), n + 11 , d)
-y <- matrix(rnorm(n*d), n, d)
-z <- matrix(rnorm((n +455)*d), n +455, d)
+p <- ground_p <- 2 #euclidean cost, p = 2
+x <- matrix(stats::rnorm((n + 11)*d), n + 11 , d)
+y <- matrix(stats::rnorm(n*d), n, d)
+z <- matrix(stats::rnorm((n +455)*d), n +455, d)
 
 # make data a list
 data <- list(x,y,z)
 
 tplan <- transport_plan_multimarg(data, p = p, ground_p = ground_p,
-observation.orientation = "rowwise",method = "hilbert")
+observation.orientation = "rowwise", method = "hilbert")
 
 #' #transpose data works too
 datat <- lapply(data, t)

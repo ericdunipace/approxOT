@@ -361,6 +361,8 @@ testthat::test_that("transport agrees with transport package shortsimplex", {
 })
 
 testthat::test_that("transport agrees with transport package networkflow", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not_installed("transport")
   set.seed(293897)
   A <- matrix(rnorm(100*256),nrow=256,ncol=100)
   B <- matrix(rnorm(100*256),nrow=256,ncol=100)

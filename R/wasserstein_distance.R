@@ -48,7 +48,7 @@ wasserstein <- function(X = NULL, Y = NULL, a= NULL, b = NULL, cost = NULL, tpla
                  method = method, ... )
     args <- args[!duplicated(names(args))]
     argn <- lapply(names(args), as.name)
-    f.call <- as.call(setNames(c(as.name("wasserstein_calc_cost"), argn), c("", names(args))))
+    f.call <- as.call(stats::setNames(c(as.name("wasserstein_calc_cost"), argn), c("", names(args))))
     
     loss <- eval(f.call, envir = args)
     
@@ -179,7 +179,7 @@ wasserstein <- function(X = NULL, Y = NULL, a= NULL, b = NULL, cost = NULL, tpla
   #     #              method = method, ... )
   #     # args <- args[!duplicated(names(args))]
   #     # argn <- lapply(names(args), as.name)
-  #     # f.call <- as.call(setNames(c(as.name("wasserstein_calc_cost"), argn), c("", names(args))))
+  #     # f.call <- as.call(stats::setNames(c(as.name("wasserstein_calc_cost"), argn), c("", names(args))))
   #     # loss_a <- eval(f.call, args)
   #     # args$Y <- args$X <- Y
   #     # args$a <- args$b <- b
@@ -296,8 +296,8 @@ wasserstein_calc_cost <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
     tplan <- NULL
     nboot <- dots$nsim
     d     <- nrow(X)
-    theta <- matrix(rnorm(d * nboot), d, nboot)
-    theta <- sweep(theta, 2, STAT = apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
+    theta <- matrix(stats::rnorm(d * nboot), d, nboot)
+    theta <- sweep(theta, 2, STATS = apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
     X_theta <- crossprod(x = X, y = theta)
     Y_theta <- crossprod(x = Y, y = theta)
     # u     <- sort(runif(nboot))

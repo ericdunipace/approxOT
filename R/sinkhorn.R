@@ -30,7 +30,7 @@
 #' @keywords internal
 sinkhorn_distance <- function(mass_x, mass_y, cost = NULL, p = 1, eps = 0.05, niter = 100){
   costp <- cost^p
-  epsilon <- eps * median(costp)
+  epsilon <- eps * stats::median(costp)
   wass <- sinkhorn_(mass_x, mass_y, costp, epsilon, niter)
   ### CORRECTION OF THE MARGINALS
   # explained in the appendix of Coupling of Particle Filters, Jacob Lindsten Schon  (arXiv v2 appendix E)
@@ -63,7 +63,7 @@ sinkhorn_transport <- function(mass_x, mass_y, cost = NULL, eps = 0.05, niterati
   n1 <- length(mass_x)
   n2 <- length(mass_y)
   # costp <- cost^p
-  epsilon <- eps * median(cost)
+  epsilon <- eps * stats::median(cost)
   transp <- sinkhorn_(mass_x, mass_y, cost, epsilon, niterations)
   ### CORRECTION OF THE MARGINALS
   # explained in the appendix of Coupling of Particle Filters, Jacob Lindsten Schon  (arXiv v2 appendix E)

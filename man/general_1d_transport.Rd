@@ -33,8 +33,8 @@ One-dimensional optimal transport for measures with more general mass
 set.seed(23423)
 n <- 100
 d <- 10
-x <- matrix(rnorm((n + 11)*d), n + 11 , d)
-y <- matrix(rnorm(n*d), n, d)
+x <- matrix(stats::rnorm((n + 11)*d), n + 11 , d)
+y <- matrix(stats::rnorm(n*d), n, d)
 
 trans <- general_1d_transport(t(x), t(y))
 }

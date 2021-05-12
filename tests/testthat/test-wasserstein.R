@@ -90,6 +90,7 @@ testthat::test_that("wasserstein gives 0 for same distribution", {
 })
 
 testthat::test_that("wasserstein matches transport package for shortsimplex", {
+  testthat::skip_on_cran()
   testthat::skip_if_not_installed("transport")
   set.seed(11289374)
   n <- 100
@@ -128,6 +129,7 @@ testthat::test_that("wasserstein matches transport package for shortsimplex", {
 })
 
 testthat::test_that("wasserstein matches transport package for networkflow", {
+  testthat::skip_on_cran()
   testthat::skip_if_not_installed("transport")
   set.seed(11289374)
   n <- 100

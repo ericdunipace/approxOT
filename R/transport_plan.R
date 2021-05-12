@@ -21,8 +21,8 @@
 #' n <- 32
 #' d <- 5
 #' set.seed(293897)
-#' A <- matrix(rnorm(n*d),nrow=d,ncol=n)
-#' B <- matrix(rnorm(n*d),nrow=d,ncol=n)
+#' A <- matrix(stats::rnorm(n*d),nrow=d,ncol=n)
+#' B <- matrix(stats::rnorm(n*d),nrow=d,ncol=n)
 #' transp.meth <- "sinkhorn"
 #' niter <- 1e2
 #' test <- transport_plan_given_C(rep(1/n,n), 
@@ -178,7 +178,7 @@ transport_plan <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
     if (is.null(dots$is.X.sorted)) dots$is.X.sorted <- FALSE
     is.A.sorted <- as.logical(dots$is.X.sorted)
     tplan <- transport_(A_ = X, B_ = Y, p = p, ground_p = ground_p, 
-                        method_ = method, a_sort = is.A.sorted, unbiased = FALSE, threads = 1L)
+                        method_ = method, a_sort = is.A.sorted, unbiased_ = FALSE, threads_ = 1L)
     cost <- sum((X[tplan$from] - 
                    Y[tplan$to] )^p * tplan$mass*1/nrow(Y))
   } else if (method == "networkflow" | method == "shortsimplex" | method == "sinkhorn" | method == "greenkhorn" | method == "randkhorn" | method == "gandkhorn" | method == "sinkhorn2") {
@@ -211,8 +211,8 @@ transport_plan <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
     tplan <- NULL
     nboot <- as.double(dots$nsim)
     d     <- nrow(X)
-    theta <- matrix(rnorm(d * nboot), d, nboot)
-    theta <- sweep(theta, 2, STAT = apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
+    theta <- matrix(stats::rnorm(d * nboot), d, nboot)
+    theta <- sweep(theta, 2, STATS = apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
     X_theta <- crossprod(x = X, y = theta)
     Y_theta <- crossprod(x = Y, y = theta)
     # u     <- sort(runif(nboot))
@@ -289,8 +289,8 @@ transport_plan <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
 #' set.seed(23423)
 #' n <- 100
 #' d <- 10
-#' x <- matrix(rnorm((n + 11)*d), n + 11 , d)
-#' y <- matrix(rnorm(n*d), n, d)
+#' x <- matrix(stats::rnorm((n + 11)*d), n + 11 , d)
+#' y <- matrix(stats::rnorm(n*d), n, d)
 #' 
 #' trans <- general_1d_transport(t(x), t(y))
 #' @keywords internal
@@ -387,15 +387,16 @@ general_hilbert_transport <- function(X, Y) {
 #' set.seed(23423)
 #' n <- 100
 #' d <- 10
-#' x <- matrix(rnorm((n + 11)*d), n + 11 , d)
-#' y <- matrix(rnorm(n*d), n, d)
-#' z <- matrix(rnorm((n +455)*d), n +455, d)
+#' p <- ground_p <- 2 #euclidean cost, p = 2
+#' x <- matrix(stats::rnorm((n + 11)*d), n + 11 , d)
+#' y <- matrix(stats::rnorm(n*d), n, d)
+#' z <- matrix(stats::rnorm((n +455)*d), n +455, d)
 #' 
 #' # make data a list
 #' data <- list(x,y,z)
 #' 
 #' tplan <- transport_plan_multimarg(data, p = p, ground_p = ground_p,
-#' observation.orientation = "rowwise",method = "hilbert")
+#' observation.orientation = "rowwise", method = "hilbert")
 #' 
 #' #' #transpose data works too
 #' datat <- lapply(data, t)
@@ -435,15 +436,15 @@ transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
   cost <- tplan <- NULL
   
   if(method == "hilbert") {
-    idx <- lapply(data, approxOT:::hilbert_proj_)
+    idx <- lapply(data, hilbert_proj_)
     idx <- lapply(idx, "+", 1L)
   } else if (method == "univariate") {
     idx <- lapply(data, order)
   } else if (method == "sliced") {
     if(is.null(nsim)) nsim <- 1e3
     nboot <- nsim
-    theta <- matrix(rnorm(d * nboot), d, nboot)
-    theta <- sweep(theta, 2, STAT=apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
+    theta <- matrix(stats::rnorm(d * nboot), d, nboot)
+    theta <- sweep(theta, 2, STATS=apply(theta,2,function(x) sqrt(sum(x^2))), FUN = "/")
     data_theta <- lapply(data, crossprod, y = theta)
     cost <- (mean(sapply(1:nboot, function(i)  transport_plan_multimarg(lapply(data_theta, function(j) t(j[,i])), 
                                   p = ground_p, ground_p = ground_p,
