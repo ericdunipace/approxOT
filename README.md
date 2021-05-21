@@ -1,3 +1,7 @@
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/ericdunipace/approxOT/workflows/R-CMD-check/badge.svg)](https://github.com/ericdunipace/approxOT/actions)
+<!-- badges: end -->
+
 # approxOT: Approximate and Exact Optimal Transport Distances
 
 This [R](https://www.r-project.org) package performs the computation of approximate and exact optimal transport distances 
