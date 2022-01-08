@@ -8,4 +8,4 @@ src/*.dll
 src/.DS_Store
 .DS_Store
 inst/.DS_Store
-Python
+inst/python
