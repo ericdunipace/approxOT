@@ -1,4 +1,4 @@
-#include "../inst/include/trans_swap.h"
+#include "trans_swap.h"
 
 template<typename Derived> double wass_cost_p(const Eigen::MatrixBase<Derived>& A, const Eigen::MatrixBase<Derived>& B, double p, double ground_p) {
   double cost = std::pow((A - B).array().pow(ground_p).sum(), 1.0/ground_p);

@@ -1,4 +1,4 @@
-#include "../inst/include/trans_univariate_approx_pwr.h"
+#include "trans_univariate_approx_pwr.h"
 
 void  trans_univariate_approx_pwr(const matrix & A, const matrix & B, int N, int M,
                        matrixI & idx, vector & mass, bool & a_sort) {

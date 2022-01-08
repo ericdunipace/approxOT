@@ -1,4 +1,4 @@
-#include "../inst/include/wasserstein.h"
+#include "wasserstein.h"
 
 double wasserstein_p(const refVec & mass,
                      const refMat & cost, const double p,

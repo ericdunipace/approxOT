@@ -1,4 +1,4 @@
-#include "../inst/include/trans_hilbert.h"
+#include "trans_hilbert.h"
 
 void trans_hilbert(const matrix & A, const matrix & B, int N, int M,
                        matrixI & idx, vector &  mass, bool & a_sort)

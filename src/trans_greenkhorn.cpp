@@ -1,4 +1,4 @@
-#include "../inst/include/trans_greenkhorn.h"
+#include "trans_greenkhorn.h"
 
 // double rho(double a, double b) {
 //   return(b  - a + a * (std::log(a) - std::log(b)));

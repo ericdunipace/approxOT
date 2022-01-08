@@ -30,7 +30,7 @@
  Do be very careful with passing arguments between R, C and FORTRAN code. In particular, long in C will be 32-bit on most R platforms (including those mostly used by the CRAN maintainers), but 64-bit on many modern Unix and Linux platforms. It is rather unlikely that the use of long in C code has been thought through: if you need a longer type than int you should use a configure test for a C99 type such as int_fast64_t (and failing that, long long) and typedef your own type to be long or long long, or use another suitable type (such as size_t). Note that integer in FORTRAN corresponds to int in C on all R platforms.
  On my system int is 32 bit (I guess on every system), long is 64 bit (and longlong also).
  */
-#include "../inst/include/shortsimplex.h"
+#include "shortsimplex.h"
 /*#include <math.h>
 #include <R.h>
 #include <R_ext/Utils.h>

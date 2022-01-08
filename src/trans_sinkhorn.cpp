@@ -1,4 +1,4 @@
-#include "../inst/include/trans_sinkhorn.h"
+#include "trans_sinkhorn.h"
 
 // algorithm 3 in Altschuler, J., Weed, J., & Rigollet, P. (2017). 
 // Near-linear time approximation algorithms for optimal transport via Sinkhorn iteration. 

@@ -1,4 +1,4 @@
-#include "../inst/include/cost.h"
+#include "cost.h"
 
 int dist_2d_to_1d_(int i, int j, int n) {
   if((i >= 0) && (j >= 0) && (i < n) && (j < n)) {

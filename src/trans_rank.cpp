@@ -1,4 +1,4 @@
-#include "../inst/include/trans_rank.h"
+#include "trans_rank.h"
 
 void  trans_rank(const matrix & A, const matrix & B, int N, int M,
                  matrixI & idx, vector & mass, bool & a_sort) {

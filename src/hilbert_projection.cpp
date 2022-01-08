@@ -1,5 +1,5 @@
-#include "../inst/include/approxOT_types.h"
-#include "../inst/include/hilbert_cgal.h"
+#include "approxOT_types.h"
+#include "hilbert_cgal.h"
 
 //' Returns orders along the Hilbert space-filling Curve
 //'

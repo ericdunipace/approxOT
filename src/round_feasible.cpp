@@ -1,4 +1,4 @@
-#include "../inst/include/round_feasible.h"
+#include "round_feasible.h"
 
 void round_feasible(matrix & F, const refVecConst & mass_a, const refVecConst & mass_b) {
   vector a_f = F.rowwise().sum();

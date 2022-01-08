@@ -1,6 +1,7 @@
 #ifndef HILBERT_CGAL_H
 #define HILBERT_CGAL_H
 
+#include <CGAL/basic.h>
 #include <CGAL/Cartesian_d.h>
 #include <CGAL/spatial_sort.h>
 #include <CGAL/Spatial_sort_traits_adapter_d.h>
@@ -8,7 +9,7 @@
 #include <CGAL/hilbert_sort.h>
 #include <CGAL/Spatial_sort_traits_adapter_d.h>
 
-//' Interfaces from R data types to CGAL for Hilbert sortin
+//' Interfaces from R data types to CGAL for Hilbert sorting
 //'
 //' @param A a pointer to the data
 //' @param D an integer denoting the number of covariates

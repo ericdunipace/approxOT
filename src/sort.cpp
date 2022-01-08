@@ -1,4 +1,4 @@
-#include "../inst/include/sort.h"
+#include "sort.h"
 
 bool compare (double a, double b) {
   return a < b;

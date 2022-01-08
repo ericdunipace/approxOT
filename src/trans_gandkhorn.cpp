@@ -1,4 +1,4 @@
-#include "../inst/include/trans_gandkhorn.h"
+#include "trans_gandkhorn.h"
 
 
 //' Generates approximate optimal transport plans

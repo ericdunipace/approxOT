@@ -1,4 +1,4 @@
-#include "../inst/include/networkflow.h"
+#include "networkflow.h"
 using namespace Rcpp;
 using namespace std;
 using namespace lemon;

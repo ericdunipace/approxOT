@@ -1,4 +1,4 @@
-#include "../inst/include/utils.h"
+#include "utils.h"
 
 double threshold(double num) 
 {

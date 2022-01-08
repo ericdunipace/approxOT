@@ -1,4 +1,4 @@
-#include "../inst/include/hilbert_cgal.h"
+#include "hilbert_cgal.h"
 
 
 //following tutorials at https://doc.cgal.org/latest/Spatial_sorting/examples.html

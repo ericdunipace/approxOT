@@ -5,5 +5,6 @@
 ## With R 3.1.0 or later, you can uncomment the following line to tell R to 
 ## enable compilation with C++11 (or even C++14) where available
 CXX_STD = CXX14
-PKG_CXXFLAGS = -DCGAL_HEADER_ONLY=1 -DCGAL_NO_GMP=1
+PKG_CXXFLAGS = -DCGAL_HEADER_ONLY=1 -DCGAL_NO_GMP=1 -I../inst/include
+PKG_CFLAGS = -I../inst/include
 

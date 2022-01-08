@@ -1,4 +1,4 @@
-#include "../inst/include/trans_approxOT.h"
+#include "trans_approxOT.h"
 
 void trans_approxOT(const refVecConst & mass_a, const refVecConst & mass_b, 
                     refMat cost_matrix, 

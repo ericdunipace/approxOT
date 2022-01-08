@@ -1,4 +1,4 @@
-#include "../inst/include/systematic_sample.h"
+#include "systematic_sample.h"
 
 void sample_systematic(vectorI & samps, const vector & weight, const int nsamp ) {
   Rcpp::RNGScope scope;

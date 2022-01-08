@@ -1,4 +1,4 @@
-#include "../inst/include/trans_univariate.h"
+#include "trans_univariate.h"
 
 void  trans_univariate(const vector & A, const vector & B, int N, int M,
                        matrixI & idx, vector & mass, bool & a_sort) {

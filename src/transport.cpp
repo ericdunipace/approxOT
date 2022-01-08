@@ -1,4 +1,4 @@
-#include "../inst/include/transport.h"
+#include "transport.h"
 
 
 // .C("shortsimplex",

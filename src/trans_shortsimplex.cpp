@@ -1,4 +1,4 @@
-#include "../inst/include/trans_shortsimplex.h"
+#include "trans_shortsimplex.h"
 
 void trans_shortsimplex(vectorI & mass_a, vectorI & mass_b, refMat cost_matrix, 
                         matrixI & assign_mat, matrixI &  basis_mat) {
