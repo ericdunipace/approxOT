@@ -6,7 +6,7 @@ citEntry(
   author   = person(given="Eric A.",family = "Dunipace"),
   year     = 2021,
   note     = sprintf("R package version %s", 0.1),
-  url      = "http://www.github.com/ericdunipace/approxOT",
+  url      = "https://github.com/ericdunipace/approxOT",
   textVersion = paste(
     "Dunipace, Eric A. (2021)",
     "approxOT: approximate optimal transport.",

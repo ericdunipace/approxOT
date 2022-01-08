@@ -1,6 +1,6 @@
 Package: approxOT
 Type: Package
-Title: Approximate and exact optimal transport methods
+Title: Approximate and Exact Optimal Transport Methods
 Version: 1.0
 Date: 2022-01-07
 Author: Eric Dunipace
@@ -9,7 +9,7 @@ Description: R and C++ functions to perform exact and
   approximate optimal transport. All C++ methods are linkable 
   to other R packages via their header files. 
 License: GPL (>=3.0)
-Imports: Rcpp (>= 1.0.3), RcppEigen, stats
+Imports: Rcpp (>= 1.0.3), stats
 LinkingTo: Rcpp, RcppEigen, RcppCGAL, BH
 BugReports: https://github.com/ericdunipace/approxOT/issues
 Suggests: 

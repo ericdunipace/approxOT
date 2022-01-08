@@ -4,7 +4,7 @@
 #' @param mass_y The empirical measure of the second sample.
 #' @param p The power of the Wasserstein distance
 #' @param cost Specify the cost matrix in advance.
-#' @param method The transportation method to use, one of "exact","networkflow","shortsimplex","sinkhorn","greenkhorn", "randkhorn", "gandkhorn"
+#' @param method The transportation method to use, one of "exact", "networkflow","shortsimplex", "sinkhorn", "greenkhorn"
 #' @param cost_a The cost matrix for the first sample with itself. Only used for unbiased Sinkhorn
 #' @param cost_b The cost matrix for the second sample with itself. Only used for unbiased Sinkhorn
 #' @param ... Additional arguments for various methods:

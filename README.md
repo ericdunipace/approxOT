@@ -22,7 +22,7 @@ and Schuhmacher (2014) to calculate an *exact* optimal transport distance.
 to calculate entropically regularized optimal transport distances.
 An unbiased option also allows the calculation of Sinkhorn divergences (removing the entropic bias).
 5. "greenkhorn": use the Greenkhorn algorithm of Altschuler et al. (2017).
-6. "hilbert": utilizes Hilbert sorting to perform *very fast* optimal transport distances. Relies on the CGAL header library provided by the [RcppCGAL](http:://www.github.com/ericdunipace/RcppCGAL) package.
+6. "hilbert": utilizes Hilbert sorting to perform *very fast* optimal transport distances. Relies on the CGAL header library provided by the [RcppCGAL](https://github.com/ericdunipace/RcppCGAL) package.
 7. "sliced": uses the sliced optimal transport distances as described in Bonneel et al. (2015).
 8. "ranks": use the average ranks of each column to perform quick optimal transport distances.
 9. "swapping": calculates the swapping optimal transport distance

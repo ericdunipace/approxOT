@@ -24,7 +24,7 @@ transport_plan_given_C(
 
 \item{cost}{Specify the cost matrix in advance.}
 
-\item{method}{The transportation method to use, one of "exact","networkflow","shortsimplex","sinkhorn","greenkhorn", "randkhorn", "gandkhorn"}
+\item{method}{The transportation method to use, one of "exact", "networkflow","shortsimplex", "sinkhorn", "greenkhorn"}
 
 \item{cost_a}{The cost matrix for the first sample with itself. Only used for unbiased Sinkhorn}
 
