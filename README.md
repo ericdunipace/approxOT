@@ -10,7 +10,7 @@ in C++ to allow other packages to use these methods.
 
 ## Installation
 To install this package, download or clone this repository and install with `devtools::install("approxOT")` or install directly
-from Github using `devtools::install_github`.
+from Github using `devtools::install_github`. Alternatively, a version is available from [CRAN](https://CRAN.R-project.org/package=approxOT).
 
 ## Algorithms
 The package currently supports the following algorithms to calculate optimal transport distances
