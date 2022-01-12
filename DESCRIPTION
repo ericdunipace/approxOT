@@ -1,7 +1,7 @@
 Package: approxOT
 Type: Package
 Title: Approximate and Exact Optimal Transport Methods
-Version: 1.0
+Version: 1.0.1
 Date: 2022-01-07
 Author: Eric Dunipace
 Maintainer: Eric Dunipace <edunipace@mail.harvard.edu>
