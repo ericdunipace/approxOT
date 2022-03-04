@@ -3,7 +3,12 @@ Type: Package
 Title: Approximate and Exact Optimal Transport Methods
 Version: 1.0.1
 Date: 2022-01-07
-Author: Eric Dunipace
+Authors@R: 
+    person("Eric", "Dunipace", 
+        role = c("aut", "cre"),
+        email = "edunipace@mail.harvard.edu",
+        comment = c(ORCID = "0000-0001-8909-213X"))
+Author: Eric Dunipace [aut, cre] (<https://orcid.org/0000-0001-8909-213X>)
 Maintainer: Eric Dunipace <edunipace@mail.harvard.edu>
 Description: R and C++ functions to perform exact and 
   approximate optimal transport. All C++ methods are linkable 
