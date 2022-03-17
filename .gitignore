@@ -9,3 +9,5 @@ src/.DS_Store
 .DS_Store
 inst/.DS_Store
 inst/python
+cran-comments.md
+

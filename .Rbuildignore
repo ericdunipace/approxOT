@@ -2,3 +2,4 @@
 ^\.Rproj\.user$
 ^inst/python$
 ^\.github$
+^cran-comments.md$

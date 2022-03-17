@@ -155,7 +155,7 @@ void transport(const matrix & A, const matrix & B, const double p, const double 
   int M = B.cols();
   bool univ = false;
   
-  if ( method == "univariate" || ((A.rows() == 1) & (B.rows() == 1) & (N == M) ) ){
+  if ( method == "univariate" || ((A.rows() == 1) && (B.rows() == 1) && (N == M) ) ){
     univ = true;
   }
   if ( univ ) {
