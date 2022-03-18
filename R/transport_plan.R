@@ -40,10 +40,13 @@ transport_plan_given_C <- function(mass_x, mass_y, p = 2,
   unbiased <- isTRUE(as.logical(dots$unbiased))
   threads <- as.integer(dots$threads)
   stopifnot(all(is.finite(cost)))
+  entropy.method <- method == "sinkhorn"
   
-  if (unbiased && (is.null(cost_a) || is.null(cost_b))) {
+  if (unbiased && entropy.method && (is.null(cost_a) || is.null(cost_b))) {
     stop("Must specify cost_a and cost_b for sinkhorn unbiased")
   } else if(!unbiased) {
+    cost_a <- cost_b <- matrix(0.0,0,0)
+  } else {
     cost_a <- cost_b <- matrix(0.0,0,0)
   }
   
