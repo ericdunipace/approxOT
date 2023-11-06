@@ -33,7 +33,7 @@ transport_plan(
 
 \item{method}{Which transportation method to use. See [transport_options][transport_options]}
 
-\item{...}{Additional arguments for various methods:
+\item{...}{Additional arguments for various methods
 \itemize{
 \item{"niter":}{ The number of iterations to use for the entropically penalized optimal transport distances}
 \item{"epsilon":}{ The multiple of the median cost to use as a penalty in the entropically penalized optimal transport distances}
@@ -51,8 +51,8 @@ Optimal transport plans
 set.seed(203987)
 n <- 100
 d <- 10
-x <- matrix(rnorm(d*n), nrow=d, ncol=n)
-y <- matrix(rnorm(d*n), nrow=d, ncol=n)
+x <- matrix(stats::rnorm(d*n), nrow=d, ncol=n)
+y <- matrix(stats::rnorm(d*n), nrow=d, ncol=n)
 #get hilbert sort orders for x in backwards way
 transx <- transport_plan(X=x, Y=x, ground_p = 2, p = 2, 
                          observation.orientation =  "colwise", 

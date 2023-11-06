@@ -3,3 +3,6 @@
 ^inst/python$
 ^\.github$
 ^cran-comments.md$
+^cran-comments\.md$
+^revdep$
+^dev$

@@ -857,7 +857,7 @@ void argmin_f(const refVecConst & mass_a, const refVecConst & mass_b, const matr
 
 double median(refMat A) {
   if ( A.size() == 0) {
-    Rcpp:stop("Can't take the median of an empty matrix.");
+    Rcpp::stop("Can't take the median of an empty matrix.");
   }
   int size = A.size();
   int middleIdx = size/2;
@@ -881,7 +881,7 @@ double median(refMat A) {
 
 double median(const matrix & A) {
   if ( A.size() == 0) {
-    Rcpp:stop("Can't take the median of an empty matrix.");
+    Rcpp::stop("Can't take the median of an empty matrix.");
   }
   int size = A.size();
   int middleIdx = size/2;
@@ -906,7 +906,7 @@ double median(const matrix & A) {
 
 double median( matrix & A) {
   if ( A.size() == 0) {
-    Rcpp:stop("Can't take the median of an empty matrix.");
+    Rcpp::stop("Can't take the median of an empty matrix.");
   }
   int size = A.size();
   int middleIdx = size/2;

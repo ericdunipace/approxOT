@@ -38,7 +38,7 @@ typedef Eigen::LDLT<matrix> ldlt;
 
 typedef Eigen::Map<matrix> matMap;
 typedef Eigen::Map<const matrix> matMapConst;
-typedef Eigen::Map<Eigen::Matrix<long double, Eigen::Dynamic,  Eigen::Dynamic>> matMapLD;
+//typedef Eigen::Map<Eigen::Matrix<long double, Eigen::Dynamic,  Eigen::Dynamic>> matMapLD;
 typedef Eigen::Map<rowMat> rowMatMap;
 
 typedef Eigen::Map<Eigen::VectorXd> vecMap;

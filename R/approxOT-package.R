@@ -4,7 +4,7 @@
 #' @author Eric Dunipace
 #' @docType package
 #' @name approxOT
-#' @useDynLib approxOT
+#' @useDynLib approxOT, .registration = TRUE
 #' @importFrom Rcpp sourceCpp 
 #' @importFrom Rcpp evalCpp
 #' @rdname approxOT-package

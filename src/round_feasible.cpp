@@ -28,3 +28,10 @@ void round_feasible(matrix & F, const refVecConst & mass_a, const refVecConst & 
   F.noalias() += err_a * err_b.transpose() / err_a.lpNorm<1>();
   // if((F.array() < 0).any()) Rcpp::stop("F < 0");
 }
+
+//[[Rcpp::export]]
+matrix round_2_feasible_(matrix & F, const vector & mass_a, const vector & mass_b) {
+  matrix F_safe = F;
+  round_feasible(F_safe, mass_a, mass_b);
+  return(F_safe);
+}

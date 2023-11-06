@@ -34,4 +34,4 @@ Algorithms 1--3 are exact algorithms. Algorithms 4+ are approximate
 Eric Dunipace
 
 ## License
-GPL 3+
+GPL 3

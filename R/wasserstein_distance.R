@@ -35,7 +35,7 @@ wasserstein <- function(X = NULL, Y = NULL, a= NULL, b = NULL, cost = NULL, tpla
                         method = transport_options(), 
                         cost_a = NULL, cost_b = NULL, ... ) {
   
-  if (is.null(method)) method <- "networksimplex"
+  if (is.null(method)) method <- "networkflow"
   method <- match.arg(method)
   p <- as.double(p)
   

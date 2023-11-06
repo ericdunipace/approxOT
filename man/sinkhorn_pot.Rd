@@ -35,7 +35,7 @@ sinkhorn_pot(
 }}
 }
 \value{
-A list with slots "f" and "g", the potentals of the rows and margins, respectively.
+A list with slots "f" and "g", the potentials of the rows and margins, respectively.
 }
 \description{
 Return the dual potentials for the Sinkhorn distance

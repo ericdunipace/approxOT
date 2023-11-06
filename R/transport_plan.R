@@ -1,3 +1,121 @@
+#
+# representation(from="integer",
+#                to="integer",
+#                mass="numeric")
+# setOldClass("transport.plan")
+
+#
+# representation(indexes="integer",
+#                mass="numeric")
+# setOldClass("multi.transport.plan")
+
+#' Covert the 2-dimensional index to 1-dimensional index
+#'
+#' @param i Index of row
+#' @param j Index of column
+#' @param n Total number of rows
+#' @param m Total number of columns
+#'
+#' @return a 1d index for easy matrix entry
+#' 
+#' @keywords internal
+dist_2d_to_1d <- function (i, j, n, m) {
+  valid <- (i >= 1) & (j >= 1) & (i <= n) & (j <= m)
+  k <- (j - 1) * n + i
+  k[!valid] <- NA_real_
+  return(k)
+}
+
+#' Transform transportation plan to transportation matrix
+#'
+#' @param x An object of class `transport.plan`. See output of (transport_plan)[transport_plan()]
+#' @param ... Unused arguments
+#'
+#' @return A matrix specifying the minimal joint distribution between samples. Margins will be equal to the marginal distributions of the samples
+#' @exportS3Method base::as.matrix transport.plan
+#'
+#' @examples
+#' set.seed(203987)
+#' n <- 5
+#' d <- 2
+#' x <- matrix(rnorm(d*n), nrow=d, ncol=n)
+#' y <- matrix(rnorm(d*n), nrow=d, ncol=n)
+#' #get hilbert sort orders for x in backwards way
+#' trans_plan <- transport_plan(X=x, Y=x, ground_p = 2, p = 2, 
+#'                          observation.orientation =  "colwise", 
+#'                          method = "hilbert")
+#' trans_matrix <- as.matrix(trans_plan)
+#' print(trans_matrix)
+as.matrix.transport.plan <- function(x, ...) {
+  stopifnot(is.transport.plan(x))
+  n1 <- max(x$from)
+  n2 <- max(x$to)
+  gamma <- matrix(0.0, n1, n2)
+  gamma[dist_2d_to_1d(x$from, x$to, n1, n2)] <- x$mass
+  return(gamma)
+}
+
+#' Transform transportation matrix to transportation plan
+#'
+#' @param transport_matrix A matrix that is a transportation matrix, i.e. the minimal joint distribution for two samples.
+#' @param ... Unused arguments
+#'
+#' @return An object of class `transport.plan`. See output of (transport_plan)[transport_plan]
+#' @export
+#'
+#' @examples
+#' set.seed(203987)
+#' n <- 5
+#' d <- 2
+#' x <- matrix(stats::rnorm(d*n), nrow=d, ncol=n)
+#' y <- matrix(stats::rnorm(d*n), nrow=d, ncol=n)
+#' #get hilbert sort orders for x in backwards way
+#' trans_plan <- transport_plan(X=x, Y=x, ground_p = 2, p = 2, 
+#'                          observation.orientation =  "colwise", 
+#'                          method = "hilbert")
+#' trans_matrix <- as.matrix(trans_plan$tplan)
+#' tplan2 <- as.transport.plan(trans_matrix)
+#' all.equal(tplan2, trans_plan$tplan)
+as.transport.plan <- function(transport_matrix, ...) {
+  n1 <- nrow(transport_matrix)
+  n2 <- ncol(transport_matrix)
+  tplan <- list(from = NULL,
+                to = NULL,
+                mass = NULL)
+  class(tplan) <- c("transport.plan", "list")
+  
+  pos.idx <- which(transport_matrix > 0.0, arr.ind = TRUE)
+  tplan$from <- pos.idx[,1]
+  tplan$to <- pos.idx[,2]
+  tplan$mass <- transport_matrix[dist_2d_to_1d(tplan$from,
+                                               tplan$to,
+                                               n1,
+                                               n2)]
+  return(tplan)
+}
+
+#' Check if function is a transport.plan
+#'
+#' @param tplan An object of class `transport.plan`. See output of (transport_plan)[transport_plan]
+#'
+#' @return Logical
+#' @export
+#'
+#' @examples
+#' set.seed(203987)
+#' n <- 5
+#' d <- 2
+#' x <- matrix(rnorm(d*n), nrow=d, ncol=n)
+#' y <- matrix(rnorm(d*n), nrow=d, ncol=n)
+#' #get hilbert sort orders for x in backwards way
+#' trans_plan <- transport_plan(X=x, Y=x, ground_p = 2, p = 2, 
+#'                          observation.orientation =  "colwise", 
+#'                          method = "hilbert")
+#' print(is.transport.plan(trans_plan))
+is.transport.plan <- function(tplan) {
+  inherits(tplan, "transport.plan")
+}
+
 #' Optimal transport plans given a pre-specified cost
 #'
 #' @param mass_x The empirical measure of the first sample
@@ -7,14 +125,14 @@
 #' @param method The transportation method to use, one of "exact", "networkflow","shortsimplex", "sinkhorn", "greenkhorn"
 #' @param cost_a The cost matrix for the first sample with itself. Only used for unbiased Sinkhorn
 #' @param cost_b The cost matrix for the second sample with itself. Only used for unbiased Sinkhorn
-#' @param ... Additional arguments for various methods:
+#' @param ... Additional arguments for various methods
 #' \itemize{
 #' \item{"niter":}{ The number of iterations to use for the entropically penalized optimal transport distances}
 #' \item{"epsilon":}{ The multiple of the median cost to use as a penalty in the entropically penalized optimal transport distances}
 #' \item{"unbiased":}{ If using Sinkhorn distances, should the distance be de-biased? (TRUE/FALSE)}
 #' }
 #'
-#' @return A transportation plan as a list with slots "from","to", and "mass".
+#' @return A transportation plan as an object of class "transport.plan", which is a list with slots "from","to", and "mass".
 #' @export
 #'
 #' @examples
@@ -31,8 +149,7 @@
 transport_plan_given_C <- function(mass_x, mass_y, p = 2, 
                                    cost=NULL, method = "exact", 
                                    cost_a = NULL, cost_b = NULL, ...) {
-  method <- match.arg(method, c("exact","networkflow","shortsimplex","sinkhorn","greenkhorn", 
-                                "randkhorn", "gandkhorn", "sinkhorn2"))
+  method <- match.arg(method, c("exact","networkflow","shortsimplex","sinkhorn","greenkhorn", "sinkhorn_log", "sinkhorn2"))
   
   dots <- list(...)
   epsilon <- as.double(dots$epsilon)
@@ -61,7 +178,8 @@ transport_plan_given_C <- function(mass_x, mass_y, p = 2,
   if (length(threads) == 0) threads <- as.integer(1)
   
   if (is.null(cost) ) stop("Cost matrix must be provided")
-  tplan <- if (method == "exact" | method == "greenkhorn" | method == "sinkhorn" |
+  tplan <- if (method == "exact" | method == "greenkhorn" | 
+               method == "sinkhorn" | method == "sinkhorn_log" |
                method == "randkhorn" | method == "gandkhorn" | method == "networkflow" |
                method == "shortsimplex") {
     
@@ -95,6 +213,8 @@ transport_plan_given_C <- function(mass_x, mass_y, p = 2,
   } else {
     stop( paste0( "Transport method ", method, " not supported" ) )
   }
+  
+  class(tplan) <- c("transport.plan","list")
   return( tplan )
   
 }
@@ -109,7 +229,7 @@ transport_plan_given_C <- function(mass_x, mass_y, p = 2,
 #' @param ground_p The power of the Lp norm
 #' @param observation.orientation Are observations by row ("rowwise") or column ("colwise").
 #' @param method Which transportation method to use. See [transport_options][transport_options]
-#' @param ... Additional arguments for various methods:
+#' @param ... Additional arguments for various methods
 #' \itemize{
 #' \item{"niter":}{ The number of iterations to use for the entropically penalized optimal transport distances}
 #' \item{"epsilon":}{ The multiple of the median cost to use as a penalty in the entropically penalized optimal transport distances}
@@ -124,8 +244,8 @@ transport_plan_given_C <- function(mass_x, mass_y, p = 2,
 #' set.seed(203987)
 #' n <- 100
 #' d <- 10
-#' x <- matrix(rnorm(d*n), nrow=d, ncol=n)
-#' y <- matrix(rnorm(d*n), nrow=d, ncol=n)
+#' x <- matrix(stats::rnorm(d*n), nrow=d, ncol=n)
+#' y <- matrix(stats::rnorm(d*n), nrow=d, ncol=n)
 #' #get hilbert sort orders for x in backwards way
 #' transx <- transport_plan(X=x, Y=x, ground_p = 2, p = 2, 
 #'                          observation.orientation =  "colwise", 
@@ -184,7 +304,7 @@ transport_plan <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
                         method_ = method, a_sort = is.A.sorted, unbiased_ = FALSE, threads_ = 1L)
     cost <- sum((X[tplan$from] - 
                    Y[tplan$to] )^p * tplan$mass*1/nrow(Y))
-  } else if (method == "networkflow" | method == "shortsimplex" | method == "sinkhorn" | method == "greenkhorn" | method == "randkhorn" | method == "gandkhorn" | method == "sinkhorn2") {
+  } else if (method == "networkflow" | method == "shortsimplex" | method == "sinkhorn" | method == "greenkhorn" | method == "randkhorn" | method == "gandkhorn" | method == "sinkhorn2" | method == "sinkhorn_log") {
     # tplan <- transport_(X, Y, p, ground_p, "shortsimplex")
     
     
@@ -273,7 +393,11 @@ transport_plan <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
     stop( paste0( "Transport method ", method, " not supported" ) )
   }
   
-  return(list(tplan = tplan, cost = cost ))
+  class(tplan) <- c("transport.plan", "list")
+  tplan_out <- list(tplan = tplan, cost = cost )
+  
+  
+  return(tplan_out)
   
 }
 
@@ -346,6 +470,7 @@ general_1d_transport <- function(X, Y, a = NULL, b = NULL, method = c("hilbert",
                     to = b_idx, 
                     mass = mass)
   
+  class(transport) <- c("transport.plan", "list")
   return(transport)
   # test <- data.frame(from = a_idx, to = b_idx, mass = mass)
 }
@@ -370,6 +495,7 @@ general_hilbert_transport <- function(X, Y) {
   
   transport <- list(from = a_idx[order(b_idx)], to = sort(b_idx), mass = mass[order(b_idx)])
   
+  class(transport) <- c("transport.plan", "list")
   return(transport)
   # test <- data.frame(from = a_idx, to = b_idx, mass = mass)
 }
@@ -474,6 +600,7 @@ transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
                                   ground_p = ground_p
                                   )
   
+  class(tplan) <- c("multi.transport.plan", "list")
   return(list(tplan = tplan, cost = cost))
 }
 
@@ -493,7 +620,7 @@ transport_plan_multimarg <- function(..., p = 2, ground_p = 2,
 #' \item unbiased: Should the potentials be de-biased TRUE/FALSE
 #' }
 #'
-#' @return A list with slots "f" and "g", the potentals of the rows and margins, respectively.
+#' @return A list with slots "f" and "g", the potentials of the rows and margins, respectively.
 #' @export
 #'
 #' @keywords internal
