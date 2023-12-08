@@ -17,8 +17,12 @@ License: GPL (== 3.0)
 Imports: Rcpp (>= 1.0.3), stats
 LinkingTo: Rcpp, RcppEigen, RcppCGAL, BH
 BugReports: https://github.com/ericdunipace/approxOT/issues
-Suggests: 
-    testthat (>= 2.1.0), transport
+Suggests: testthat (>= 2.1.0), transport
 Encoding: UTF-8
 RoxygenNote: 7.2.3
 URL: https://github.com/ericdunipace/approxOT
+RemoteType: local
+RemoteUrl: /Users/eifer/GoogleDrive/R/approxOT
+NeedsCompilation: yes
+Packaged: 2023-12-08 23:13:00 UTC; eifer
+Built: R 4.3.2; aarch64-apple-darwin20; 2023-12-08 23:13:00 UTC; unix

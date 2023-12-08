@@ -11,6 +11,7 @@ R and C++ functions to perform exact and approximate optimal transport. All C++ 
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://github.com/ericdunipace/approxOT}
   \item Report bugs at \url{https://github.com/ericdunipace/approxOT/issues}
 }
 
