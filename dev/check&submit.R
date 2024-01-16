@@ -14,6 +14,7 @@ devtools::check(remote = TRUE, manual = TRUE)
 devtools::check_win_devel(quiet=TRUE)
 devtools::check_win_release(quiet = TRUE)
 devtools::check_win_oldrelease(quiet = TRUE)
+
 out <- rhub::check_for_cran(show_status = FALSE)
 
 # reverse dependency

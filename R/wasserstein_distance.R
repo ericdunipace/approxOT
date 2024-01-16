@@ -5,18 +5,18 @@
 #' @param a Optional. Empirical measure of the first sample
 #' @param b Optional. Empirical measure of the second sample
 #' @param cost Specify the cost matrix in advance.
-#' @param tplan Give a transportation plan with slots "from", "to", and "mass", like that returned by the [tranportation_plan][transportation_plan] function.
+#' @param tplan Give a transportation plan with slots "from", "to", and "mass", like that returned by the [tranportation_plan()] function.
 #' @param p The power of the Wasserstein distance
 #' @param ground_p The power of the Lp norm
-#' @param method Which transportation method to use. See [transport_options][transport_options]
+#' @param method Which transportation method to use. See [transport_options()]
 #' @param cost_a The cost matrix for the first sample with itself. Only used for unbiased Sinkhorn
 #' @param cost_b The cost matrix for the second sample with itself. Only used for unbiased Sinkhorn
 #' @param ... Additional arguments for various methods:
 #' \itemize{
-#' \item{"niter":}{ The number of iterations to use for the entropically penalized optimal transport distances}
-#' \item{"epsilon":}{ The multiple of the median cost to use as a penalty in the entropically penalized optimal transport distances}
-#' \item{"unbiased":}{ If using Sinkhorn distances, should the distance be de-biased? (TRUE/FALSE)}
-#' \item{"nboot":}{ If using sliced Wasserstein distances, specify the number of Monte Carlo samples}
+#' \item"niter": The number of iterations to use for the entropically penalized optimal transport distances
+#' \item"epsilon": The multiple of the median cost to use as a penalty in the entropically penalized optimal transport distances
+#' \item"unbiased": If using Sinkhorn distances, should the distance be de-biased? (TRUE/FALSE)
+#' \item"nboot": If using sliced Wasserstein distances, specify the number of Monte Carlo samples
 #' }
 #'
 #' @return The p-Wasserstein distance, a numeric value

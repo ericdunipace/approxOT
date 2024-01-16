@@ -127,9 +127,9 @@ is.transport.plan <- function(tplan) {
 #' @param cost_b The cost matrix for the second sample with itself. Only used for unbiased Sinkhorn
 #' @param ... Additional arguments for various methods
 #' \itemize{
-#' \item{"niter":}{ The number of iterations to use for the entropically penalized optimal transport distances}
-#' \item{"epsilon":}{ The multiple of the median cost to use as a penalty in the entropically penalized optimal transport distances}
-#' \item{"unbiased":}{ If using Sinkhorn distances, should the distance be de-biased? (TRUE/FALSE)}
+#' \item "niter": The number of iterations to use for the entropically penalized optimal transport distances
+#' \item "epsilon": The multiple of the median cost to use as a penalty in the entropically penalized optimal transport distances
+#' \item"unbiased": If using Sinkhorn distances, should the distance be de-biased? (TRUE/FALSE)
 #' }
 #'
 #' @return A transportation plan as an object of class "transport.plan", which is a list with slots "from","to", and "mass".
@@ -231,10 +231,10 @@ transport_plan_given_C <- function(mass_x, mass_y, p = 2,
 #' @param method Which transportation method to use. See [transport_options][transport_options]
 #' @param ... Additional arguments for various methods
 #' \itemize{
-#' \item{"niter":}{ The number of iterations to use for the entropically penalized optimal transport distances}
-#' \item{"epsilon":}{ The multiple of the median cost to use as a penalty in the entropically penalized optimal transport distances}
-#' \item{"unbiased":}{ If using Sinkhorn distances, should the distance be de-biased? (TRUE/FALSE)}
-#' \item{"nboot":}{ If using sliced Wasserstein distances, specify the number of Monte Carlo samples}
+#' \item"niter": The number of iterations to use for the entropically penalized optimal transport distances
+#' \item"epsilon": The multiple of the median cost to use as a penalty in the entropically penalized optimal transport distances
+#' \item"unbiased": If using Sinkhorn distances, should the distance be de-biased? (TRUE/FALSE)
+#' \item"nboot": If using sliced Wasserstein distances, specify the number of Monte Carlo samples
 #' }
 #'
 #' @return a list with slots "tplan" and "cost". "tplan" is the optimal transport plan and "cost" is the optimal transport distance.

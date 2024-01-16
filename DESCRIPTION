@@ -2,16 +2,37 @@ Package: approxOT
 Type: Package
 Title: Approximate and Exact Optimal Transport Methods
 Version: 1.1
-Date: 2023-12-08
+Date: 2024-01-15
 Authors@R: 
-    person("Eric", "Dunipace", 
+    c(person("Eric", "Dunipace", 
         role = c("aut", "cre"),
         email = "edunipace@mail.harvard.edu",
-        comment = c(ORCID = "0000-0001-8909-213X"))
-Author: Eric Dunipace [aut, cre] (<https://orcid.org/0000-0001-8909-213X>)
+        comment = c(ORCID = "0000-0001-8909-213X")),
+    person(given = "Espen",
+        family = "Bernton",
+        role = c("ctb"),
+        comment = "'Hilbert Sort' adapted from their code"),
+    person(given = "Mathieu",
+        family = "Gerber",
+        role = c("ctb"),
+        comment = "'Hilbert Sort' adapted from their code"),
+    person(given = "Pierre",
+        family = "Jacob",
+        role = c("ctb"),
+        comment = "'Hilbert Sort' adapted from their code"),
+    person(given = "Dominic", 
+        family = "Schuhmacher", 
+        email = "dominic.schuhmacher@mathematik.uni-goettingen.de", 
+        role = c("ctb"),
+        comment = "'Shortsimplex' optimal transport method adapted from their code"),
+    person(given = "Nicolas", 
+        family = "Bonneel", 
+        role = "ctb", 
+        comment = "'network simplex' algorithm adapted from their code")
+        )
 Maintainer: Eric Dunipace <edunipace@mail.harvard.edu>
 Description: R and C++ functions to perform exact and 
-  approximate optimal transport. All C++ methods are linkable 
+  approximate optimal transport. All C++ methods can be linked 
   to other R packages via their header files. 
 License: GPL (== 3.0)
 Imports: Rcpp (>= 1.0.3), stats
