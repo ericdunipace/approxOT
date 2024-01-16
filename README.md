@@ -1,5 +1,6 @@
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/ericdunipace/approxOT/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ericdunipace/approxOT/actions/workflows/R-CMD-check.yaml)
+[![CRAN status](https://www.r-pkg.org/badges/version/approxOT)](https://CRAN.R-project.org/package=approxOT)
 <!-- badges: end -->
 
 # approxOT: Approximate and Exact Optimal Transport Distances
