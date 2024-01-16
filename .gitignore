@@ -11,4 +11,5 @@ src/deprecated
 inst/.DS_Store
 inst/python
 cran-comments.md
+revdep
 
