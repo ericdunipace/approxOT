@@ -14,14 +14,14 @@ void  trans_univariate_approx_pwr(const matrix & A, const matrix & B, int N, int
   matrixI idx_B(S,N);
   
   if (a_sort) { 
-    idx_A = vectorI::LinSpaced(Eigen::Sequential,N*S,0,(N*S)-1);
+    idx_A = vectorI::LinSpaced(N*S,0,(N*S)-1);
   } else {
     sort_indexes_byrow_totalentry(A, idx_A);
     a_sort = true;
   }
   sort_indexes_byrow_totalentry(B, idx_B);
   
-  idx.col(1) = vectorI::LinSpaced(Eigen::Sequential,N*S,0,(N*S)-1);
+  idx.col(1) = vectorI::LinSpaced(N*S,0,(N*S)-1);
   vecMapI idx_avec(idx_A.data(), idx_A.size());
   vecMapI idx_bvec(idx_B.data(), idx_B.size());
   for ( int i = 0; i < N*S; i ++ ) {
