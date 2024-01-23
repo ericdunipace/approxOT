@@ -26,7 +26,7 @@ void  trans_rank(const matrix & A, const matrix & B, int N, int M,
     // Rcpp::Rcout << "a sorted\n";
     std::iota (idx_A.begin(), idx_A.end(), 0);
   }
-  idx.col(1) = vectorI::LinSpaced(Eigen::Sequential,N,0,N-1);
+  idx.col(1) = vectorI::LinSpaced(N,0,N-1);
   for ( int n = 0; n < N; n++ ) {
     idx(idx_B[n],0) = idx_A[n];
     // Rcpp::Rcout << idx_A[n] << ", ";

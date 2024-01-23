@@ -84,7 +84,7 @@ void sort_indexes_bycol_Eigenmat(const refMatConst & v, matrixI & idx) { //check
   
   for(int n = 0; n < N;  n++) {
     // initialize original index locations
-    idx.col(n) = Eigen::VectorXi::LinSpaced(Eigen::Sequential,P,0,P-1); //fills with increasing values
+    idx.col(n) = Eigen::VectorXi::LinSpaced(P,0,P-1); //fills with increasing values
     
     // sort indexes based on comparing values in v
     std::sort(idx.col(n).data(), idx.col(n).data() + P,
@@ -106,7 +106,7 @@ void rel_sort_indexes_byrow_Eigenmat(const refMatConst & v, matrixI & idx) {
   
   for(int p = 0; p < P;  p++) {
     // initialize original index locations
-    idx.col(p) = Eigen::VectorXi::LinSpaced(Eigen::Sequential,N,0,N-1); //fills with increasing values
+    idx.col(p) = Eigen::VectorXi::LinSpaced(N,0,N-1); //fills with increasing values
     
     vector v_row = v.row(p); // get row of v
     
@@ -130,7 +130,7 @@ void sort_indexes_byrow_Eigenmat(const matrix & v, matrixI & idx) {
   
   for(int p = 0; p < P;  p++) {
     // initialize original index locations
-    idx.col(p) = Eigen::VectorXi::LinSpaced(Eigen::Sequential,N,0,N-1); //fills with increasing values
+    idx.col(p) = Eigen::VectorXi::LinSpaced(N,0,N-1); //fills with increasing values
     
     vector v_row = v.row(p); // get row of v
     
@@ -152,10 +152,10 @@ void sort_indexes_byrow_totalentry(const matrix & v, matrixI & idx) {
     idx.resize(P,N);
   }
   
-  // idx = Eigen::MatrixXi::LinSpaced(Eigen::Sequential,N*P,0,(N*P)-1);
+  // idx = Eigen::MatrixXi::LinSpaced(N*P,0,(N*P)-1);
   // Rcpp::Rcout << idx(P-1,0) << "\n";
   for(int p = 0; p < P;  p++) {
-    vectorI idx_row = vectorI::LinSpaced(Eigen::Sequential,N,0,N-1);
+    vectorI idx_row = vectorI::LinSpaced(N,0,N-1);
     vector v_row = v.row(p); // get row of v
     // sort indexes based on comparing values in v
     std::sort(idx_row.data(), idx_row.data() + N,
@@ -220,7 +220,7 @@ void rank_mat(const matrix & v, matrixI & rank) {
     vector v_row = v.row(p);
     
     // initialize original index locations
-    vectorI idx = Eigen::VectorXi::LinSpaced(Eigen::Sequential,N,0,N-1); //fills with increasing values
+    vectorI idx = Eigen::VectorXi::LinSpaced(N,0,N-1); //fills with increasing values
     
     // sort indexes based on comparing values in v
     std::sort(idx.data(), idx.data() + N,

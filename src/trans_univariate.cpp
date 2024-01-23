@@ -18,7 +18,7 @@ void  trans_univariate(const vector & A, const vector & B, int N, int M,
     sort_indexes(A, idx_A);
     // a_sort = true;
   }
-  idx.col(1) = vectorI::LinSpaced(Eigen::Sequential,N,0,N-1);
+  idx.col(1) = vectorI::LinSpaced(N,0,N-1);
   for ( int n = 0; n < N; n++ ) {
     // Rcpp::Rcout << idx_B[n] << ", " << idx_A[n] << "\n";
     idx(idx_B[n],0) = idx_A[n];

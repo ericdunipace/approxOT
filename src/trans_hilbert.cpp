@@ -22,7 +22,7 @@ void trans_hilbert(const matrix & A, const matrix & B, int N, int M,
     // a_sort = true;
   }
   hilbert_sort_cgal_fun( B.data(), K, N, &idx_B[0] );
-  idx.col(1) = vectorI::LinSpaced(Eigen::Sequential,N,0,N-1);
+  idx.col(1) = vectorI::LinSpaced(N,0,N-1);
   for ( int n = 0; n < N; n++ ) {
     idx(idx_B[n],0) = idx_A[n];
   }
