@@ -210,122 +210,122 @@ void soft_threshold_mcp(VectorXd &res, const VectorXd &vec, const double &penalt
 
 */
 
-void update_active_set(VectorXd &u, std::vector<int> &active, std::vector<int> &inactive,
-                       double &lambdak, double &lambdakminus1, const int &penalty)
-{
-  for(std::vector<int>::iterator it = inactive.begin(); it != inactive.end(); ) {
-    // the sequential strong rule
-    // https://statweb.stanford.edu/~tibs/ftp/strong.pdf
-    //std::cout << "var idx: " << *it << std::endl;
-    if (std::abs(u(*it)) >= 2 *lambdak - lambdakminus1){
-      active.push_back(*it);
-      it = inactive.erase(it);
-    } else {
-      ++it;
-    }
-  }
-}
-
-void initiate_active_set(VectorXd &u, std::vector<int> &active, std::vector<int> &inactive,
-                         double &lambdak, double &lambdamax, const int &nvars, const int &penalty)
-{
-  for (int cl = 0; cl < nvars; ++cl) {
-    // the basic strong rule
-    if (std::abs(u(cl)) >= 2 * lambdak - lambdamax){
-      active.push_back(cl);
-    } else {
-      inactive.push_back(cl);
-    }
-  }
-}
-
-void block_soft_threshold(SpVec &res, const VectorXd &vec, const double &penalty,
-                                 const int &ngroups, VectorXi &unique_grps, VectorXi &grps)
-{
-  int v_size = vec.size();
-  res.setZero();
-  res.reserve(v_size);
-  
-  for (int g = 0; g < ngroups; ++g) 
-  {
-    double thresh_factor;
-    std::vector<int> gr_idx;
-    for (int v = 0; v < v_size; ++v) 
-    {
-      if (grps(v) == unique_grps(g)) 
-      {
-        gr_idx.push_back(v);
-      }
-    }
-    if (unique_grps(g) == 0) 
-    {
-      thresh_factor = 1;
-    } else 
-    {
-      double ds_norm = 0;
-      for (std::vector<int>::size_type v = 0; v < gr_idx.size(); ++v)
-      {
-        int c_idx = gr_idx[v];
-        ds_norm += std::pow(vec(c_idx), 2);
-      }
-      ds_norm = std::sqrt(ds_norm);
-      double grp_wts = std::sqrt(gr_idx.size());
-      thresh_factor = std::max(0.0, 1 - penalty * grp_wts / (ds_norm) );
-    }
-    if (thresh_factor != 0.0)
-    {
-      for (std::vector<int>::size_type v = 0; v < gr_idx.size(); ++v)
-      {
-        int c_idx = gr_idx[v];
-        res.insertBack(c_idx) = vec(c_idx) * thresh_factor;
-      }
-    }
-  }
-}
-
-
-void block_soft_threshold(VectorXd &res, const VectorXd &vec, const double &penalty,
-                          const int &ngroups, VectorXi &unique_grps, VectorXi &grps)
-{
-  int v_size = vec.size();
-  res.setZero();
-  
-  for (int g = 0; g < ngroups; ++g) 
-  {
-    double thresh_factor;
-    std::vector<int> gr_idx;
-    for (int v = 0; v < v_size; ++v) 
-    {
-      if (grps(v) == unique_grps(g)) 
-      {
-        gr_idx.push_back(v);
-      }
-    }
-    if (unique_grps(g) == 0) 
-    {
-      thresh_factor = 1;
-    } else 
-    {
-      double ds_norm = 0;
-      for (std::vector<int>::size_type v = 0; v < gr_idx.size(); ++v)
-      {
-        int c_idx = gr_idx[v];
-        ds_norm += std::pow(vec(c_idx), 2);
-      }
-      ds_norm = std::sqrt(ds_norm);
-      double grp_wts = std::sqrt(gr_idx.size());
-      thresh_factor = std::max(0.0, 1 - penalty * grp_wts / (ds_norm) );
-    }
-    if (thresh_factor != 0.0)
-    {
-      for (std::vector<int>::size_type v = 0; v < gr_idx.size(); ++v)
-      {
-        int c_idx = gr_idx[v];
-        res(c_idx) = vec(c_idx) * thresh_factor;
-      }
-    }
-  }
-}
+// void update_active_set(VectorXd &u, std::vector<int> &active, std::vector<int> &inactive,
+//                        double &lambdak, double &lambdakminus1, const int &penalty)
+// {
+//   for(std::vector<int>::iterator it = inactive.begin(); it != inactive.end(); ) {
+//     // the sequential strong rule
+//     // https://statweb.stanford.edu/~tibs/ftp/strong.pdf
+//     //std::cout << "var idx: " << *it << std::endl;
+//     if (std::abs(u(*it)) >= 2 *lambdak - lambdakminus1){
+//       active.push_back(*it);
+//       it = inactive.erase(it);
+//     } else {
+//       ++it;
+//     }
+//   }
+// }
+// 
+// void initiate_active_set(VectorXd &u, std::vector<int> &active, std::vector<int> &inactive,
+//                          double &lambdak, double &lambdamax, const int &nvars, const int &penalty)
+// {
+//   for (int cl = 0; cl < nvars; ++cl) {
+//     // the basic strong rule
+//     if (std::abs(u(cl)) >= 2 * lambdak - lambdamax){
+//       active.push_back(cl);
+//     } else {
+//       inactive.push_back(cl);
+//     }
+//   }
+// }
+// 
+// void block_soft_threshold(SpVec &res, const VectorXd &vec, const double &penalty,
+//                                  const int &ngroups, VectorXi &unique_grps, VectorXi &grps)
+// {
+//   int v_size = vec.size();
+//   res.setZero();
+//   res.reserve(v_size);
+//   
+//   for (int g = 0; g < ngroups; ++g) 
+//   {
+//     double thresh_factor;
+//     std::vector<int> gr_idx;
+//     for (int v = 0; v < v_size; ++v) 
+//     {
+//       if (grps(v) == unique_grps(g)) 
+//       {
+//         gr_idx.push_back(v);
+//       }
+//     }
+//     if (unique_grps(g) == 0) 
+//     {
+//       thresh_factor = 1;
+//     } else 
+//     {
+//       double ds_norm = 0;
+//       for (std::vector<int>::size_type v = 0; v < gr_idx.size(); ++v)
+//       {
+//         int c_idx = gr_idx[v];
+//         ds_norm += std::pow(vec(c_idx), 2);
+//       }
+//       ds_norm = std::sqrt(ds_norm);
+//       double grp_wts = std::sqrt(gr_idx.size());
+//       thresh_factor = std::max(0.0, 1 - penalty * grp_wts / (ds_norm) );
+//     }
+//     if (thresh_factor != 0.0)
+//     {
+//       for (std::vector<int>::size_type v = 0; v < gr_idx.size(); ++v)
+//       {
+//         int c_idx = gr_idx[v];
+//         res.insertBack(c_idx) = vec(c_idx) * thresh_factor;
+//       }
+//     }
+//   }
+// }
+// 
+// 
+// void block_soft_threshold(VectorXd &res, const VectorXd &vec, const double &penalty,
+//                           const int &ngroups, VectorXi &unique_grps, VectorXi &grps)
+// {
+//   int v_size = vec.size();
+//   res.setZero();
+//   
+//   for (int g = 0; g < ngroups; ++g) 
+//   {
+//     double thresh_factor;
+//     std::vector<int> gr_idx;
+//     for (int v = 0; v < v_size; ++v) 
+//     {
+//       if (grps(v) == unique_grps(g)) 
+//       {
+//         gr_idx.push_back(v);
+//       }
+//     }
+//     if (unique_grps(g) == 0) 
+//     {
+//       thresh_factor = 1;
+//     } else 
+//     {
+//       double ds_norm = 0;
+//       for (std::vector<int>::size_type v = 0; v < gr_idx.size(); ++v)
+//       {
+//         int c_idx = gr_idx[v];
+//         ds_norm += std::pow(vec(c_idx), 2);
+//       }
+//       ds_norm = std::sqrt(ds_norm);
+//       double grp_wts = std::sqrt(gr_idx.size());
+//       thresh_factor = std::max(0.0, 1 - penalty * grp_wts / (ds_norm) );
+//     }
+//     if (thresh_factor != 0.0)
+//     {
+//       for (std::vector<int>::size_type v = 0; v < gr_idx.size(); ++v)
+//       {
+//         int c_idx = gr_idx[v];
+//         res(c_idx) = vec(c_idx) * thresh_factor;
+//       }
+//     }
+//   }
+// }
 
 
 /*
