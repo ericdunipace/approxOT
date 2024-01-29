@@ -1,6 +1,13 @@
 # approxOT
 
-## Version 1.1
+## Changes in Version 1.1.1
+
+### Minor Improvements and Bug fixes
+* Minor bug fix to update a few Eigen C++ functions (Thank you Andrew Johnson!) 
+* Removing older functions that are no longer used to speed up build
+* No changes to user interface
+
+## Changes in Version 1.1
 
 * Added a `NEWS.md` file to track changes to the package.
 * Added a `as.matrix` function to convert transportation plans to matrices.
