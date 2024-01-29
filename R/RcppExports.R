@@ -26,10 +26,6 @@ round_2_feasible_ <- function(F, mass_a, mass_b) {
     .Call(`_approxOT_round_2_feasible_`, F, mass_a, mass_b)
 }
 
-sinkhorn_ <- function(p_, q_, cost_matrix_, epsilon, niterations) {
-    .Call(`_approxOT_sinkhorn_`, p_, q_, cost_matrix_, epsilon, niterations)
-}
-
 generate_S <- function(cost, f, g, eta) {
     .Call(`_approxOT_generate_S`, cost, f, g, eta)
 }

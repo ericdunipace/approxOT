@@ -149,7 +149,10 @@ is.transport.plan <- function(tplan) {
 transport_plan_given_C <- function(mass_x, mass_y, p = 2, 
                                    cost=NULL, method = "exact", 
                                    cost_a = NULL, cost_b = NULL, ...) {
-  method <- match.arg(method, c("exact","networkflow","shortsimplex","sinkhorn","greenkhorn", "sinkhorn_log", "sinkhorn2"))
+  method <- match.arg(method, c("exact","networkflow","shortsimplex","sinkhorn","greenkhorn", 
+                                "sinkhorn_log"
+                                # , "sinkhorn2"
+                                ))
   
   dots <- list(...)
   epsilon <- as.double(dots$epsilon)
@@ -180,7 +183,8 @@ transport_plan_given_C <- function(mass_x, mass_y, p = 2,
   if (is.null(cost) ) stop("Cost matrix must be provided")
   tplan <- if (method == "exact" | method == "greenkhorn" | 
                method == "sinkhorn" | method == "sinkhorn_log" |
-               method == "randkhorn" | method == "gandkhorn" | method == "networkflow" |
+               # method == "randkhorn" | method == "gandkhorn" | 
+               method == "networkflow" |
                method == "shortsimplex") {
     
     n1 <- length(mass_x)
@@ -205,10 +209,10 @@ transport_plan_given_C <- function(mass_x, mass_y, p = 2,
       stop("Some error found in mass_x or mass_y length. Check mass input.")
     }
     
-  } else if (method == "sinkhorn2") {
-    
-    sinkhorn_transport(mass_x = mass_x, mass_y = mass_y, cost = cost^p, 
-                       eps = epsilon, niterations = niter)
+  # } else if (method == "sinkhorn2") {
+  #   
+  #   sinkhorn_transport(mass_x = mass_x, mass_y = mass_y, cost = cost^p, 
+  #                      eps = epsilon, niterations = niter)
     
   } else {
     stop( paste0( "Transport method ", method, " not supported" ) )
@@ -304,7 +308,9 @@ transport_plan <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
                         method_ = method, a_sort = is.A.sorted, unbiased_ = FALSE, threads_ = 1L)
     cost <- sum((X[tplan$from] - 
                    Y[tplan$to] )^p * tplan$mass*1/nrow(Y))
-  } else if (method == "networkflow" | method == "shortsimplex" | method == "sinkhorn" | method == "greenkhorn" | method == "randkhorn" | method == "gandkhorn" | method == "sinkhorn2" | method == "sinkhorn_log") {
+  } else if (method == "networkflow" | method == "shortsimplex" | method == "sinkhorn" | method == "greenkhorn" | 
+             # method == "randkhorn" | method == "gandkhorn" | 
+             method == "sinkhorn2" | method == "sinkhorn_log") {
     # tplan <- transport_(X, Y, p, ground_p, "shortsimplex")
     
     

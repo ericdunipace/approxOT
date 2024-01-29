@@ -66,24 +66,24 @@ void trans_approxOT(const refVecConst & mass_a, const refVecConst & mass_b,
     //                  matrix & A,
     //                  double eta, double epsilon, int niterations)
     trans_greenkhorn(mass_a, mass_b, exp_cost, assign_mat, eta, epsilon_prime, niterations);
-  } else if (meth == "randkhorn") {
-    // Rcpp::stop("transport method randkhorn not found!");
-    vector a_tilde = (1.0 - epsilon_prime/8.0) * mass_a.array();
-    a_tilde += epsilon_prime/(8.0 * double(mass_a.size())) * vector::Ones(mass_a.size());
-    vector b_tilde = (1.0 - epsilon_prime/8.0) * mass_b.array();
-    b_tilde += epsilon_prime/(8.0 * double(mass_b.size())) * vector::Ones(mass_b.size());
-    trans_randkhorn(a_tilde, b_tilde, exp_cost, assign_mat, eta, epsilon_prime, niterations);
-    // Rcpp::Rcout << "epsilon': " << epsilon_prime/2.0 <<"\n";
-    // Rcpp::Rcout << "niter: " << niterations <<"\n";
-  } else if (meth == "gandkhorn") {
-    // Rcpp::stop("transport method gandkhorn not found!");
-    vector a_tilde = (1.0 - epsilon_prime/8.0) * mass_a.array();
-    a_tilde += epsilon_prime/(8.0 * double(mass_a.size())) * vector::Ones(mass_a.size());
-    vector b_tilde = (1.0 - epsilon_prime/8.0) * mass_b.array();
-    b_tilde += epsilon_prime/(8.0 * double(mass_b.size())) * vector::Ones(mass_b.size());
-    trans_gandkhorn(a_tilde, b_tilde, exp_cost, assign_mat, eta, epsilon_prime, niterations);
-    // Rcpp::Rcout << "epsilon': " << epsilon_prime/2.0 <<"\n";
-    // Rcpp::Rcout << "niter: " << niterations <<"\n";
+  // } else if (meth == "randkhorn") {
+  //   // Rcpp::stop("transport method randkhorn not found!");
+  //   vector a_tilde = (1.0 - epsilon_prime/8.0) * mass_a.array();
+  //   a_tilde += epsilon_prime/(8.0 * double(mass_a.size())) * vector::Ones(mass_a.size());
+  //   vector b_tilde = (1.0 - epsilon_prime/8.0) * mass_b.array();
+  //   b_tilde += epsilon_prime/(8.0 * double(mass_b.size())) * vector::Ones(mass_b.size());
+  //   trans_randkhorn(a_tilde, b_tilde, exp_cost, assign_mat, eta, epsilon_prime, niterations);
+  //   // Rcpp::Rcout << "epsilon': " << epsilon_prime/2.0 <<"\n";
+  //   // Rcpp::Rcout << "niter: " << niterations <<"\n";
+  // } else if (meth == "gandkhorn") {
+  //   // Rcpp::stop("transport method gandkhorn not found!");
+  //   vector a_tilde = (1.0 - epsilon_prime/8.0) * mass_a.array();
+  //   a_tilde += epsilon_prime/(8.0 * double(mass_a.size())) * vector::Ones(mass_a.size());
+  //   vector b_tilde = (1.0 - epsilon_prime/8.0) * mass_b.array();
+  //   b_tilde += epsilon_prime/(8.0 * double(mass_b.size())) * vector::Ones(mass_b.size());
+  //   trans_gandkhorn(a_tilde, b_tilde, exp_cost, assign_mat, eta, epsilon_prime, niterations);
+  //   // Rcpp::Rcout << "epsilon': " << epsilon_prime/2.0 <<"\n";
+  //   // Rcpp::Rcout << "niter: " << niterations <<"\n";
   }
   // algorithm 2 in Altschuler, J., Weed, J., & Rigollet, P. (2017). 
   // Near-linear time approximation algorithms for optimal transport via Sinkhorn iteration. 

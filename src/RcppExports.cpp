@@ -82,21 +82,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// sinkhorn_
-Rcpp::List sinkhorn_(Rcpp::NumericVector p_, Rcpp::NumericVector q_, Rcpp::NumericMatrix cost_matrix_, double epsilon, int niterations);
-RcppExport SEXP _approxOT_sinkhorn_(SEXP p_SEXP, SEXP q_SEXP, SEXP cost_matrix_SEXP, SEXP epsilonSEXP, SEXP niterationsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type p_(p_SEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type q_(q_SEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type cost_matrix_(cost_matrix_SEXP);
-    Rcpp::traits::input_parameter< double >::type epsilon(epsilonSEXP);
-    Rcpp::traits::input_parameter< int >::type niterations(niterationsSEXP);
-    rcpp_result_gen = Rcpp::wrap(sinkhorn_(p_, q_, cost_matrix_, epsilon, niterations));
-    return rcpp_result_gen;
-END_RCPP
-}
 // generate_S
 matrix generate_S(const matrix& cost, vector& f, vector& g, double eta);
 RcppExport SEXP _approxOT_generate_S(SEXP costSEXP, SEXP fSEXP, SEXP gSEXP, SEXP etaSEXP) {
@@ -335,7 +320,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_approxOT_multi_marg_given_dist_", (DL_FUNC) &_approxOT_multi_marg_given_dist_, 6},
     {"_approxOT_hilbert_proj_", (DL_FUNC) &_approxOT_hilbert_proj_, 1},
     {"_approxOT_round_2_feasible_", (DL_FUNC) &_approxOT_round_2_feasible_, 3},
-    {"_approxOT_sinkhorn_", (DL_FUNC) &_approxOT_sinkhorn_, 5},
     {"_approxOT_generate_S", (DL_FUNC) &_approxOT_generate_S, 4},
     {"_approxOT_rowLogSumExp", (DL_FUNC) &_approxOT_rowLogSumExp, 1},
     {"_approxOT_colLogSumExp", (DL_FUNC) &_approxOT_colLogSumExp, 1},

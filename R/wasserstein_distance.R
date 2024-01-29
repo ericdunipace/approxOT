@@ -31,7 +31,8 @@
 #' p = 2, ground_p = 2, 
 #' observation.orientation = "colwise", 
 #' method = "univariate")
-wasserstein <- function(X = NULL, Y = NULL, a= NULL, b = NULL, cost = NULL, tplan = NULL, p = 2, ground_p = 2, 
+wasserstein <- function(X = NULL, Y = NULL, a= NULL, b = NULL, cost = NULL, tplan = NULL, 
+                        p = 2, ground_p = 2, 
                         method = transport_options(), 
                         cost_a = NULL, cost_b = NULL, ... ) {
   

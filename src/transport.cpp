@@ -115,7 +115,9 @@ void transport_C(const refVecConst & mass_a, const refVecConst & mass_b,
     trans_networkflow(mass_a, mass_b, cost_matrix, assignment, threads, accuracy, niter);
     which_nonzero(assignment, N, M, idx);
   } else if (method == "sinkhorn" || method == "sinkhorn_log" ||
-    method == "greenkhorn" || method == "randkhorn" || method == "gandkhorn") {
+    method == "greenkhorn" 
+               // || method == "randkhorn" || method == "gandkhorn"
+               ) {
     
     // void trans_approxOT(const refVecConst & mass_a, const refVecConst & mass_b, 
     //                     refMat cost_matrix, 

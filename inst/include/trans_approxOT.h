@@ -5,8 +5,8 @@
 #include "round_feasible.h"
 #include "trans_sinkhorn.h"
 #include "trans_greenkhorn.h"
-#include "trans_randkhorn.h"
-#include "trans_gandkhorn.h"
+// #include "trans_randkhorn.h"
+// #include "trans_gandkhorn.h"
 #include "utils.h"
 
 //' Generates approximate optimal transport plans

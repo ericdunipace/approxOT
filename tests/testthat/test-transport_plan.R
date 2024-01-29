@@ -495,11 +495,12 @@ testthat::test_that("sinkhorn works", {
                               ground_p = 2, p = 2, 
                               obsrevation.orientation = "rowwise", 
                               method = transp.meth, niter = niter)
-  transtest <- transport_plan_given_C(rep(1/n,n), rep(1/n,n),  2, cost = cost_calc(A,B,2), "sinkhorn2", niter = niter)
-
+  # transtest <- transport_plan_given_C(rep(1/n,n), rep(1/n,n),  2, cost = cost_calc(A,B,2), "sinkhorn2", niter = niter)
+  # 
   testthat::expect_true((1/n) %in% tapply(trans$tplan$mass, trans$tplan$to, sum))
   testthat::expect_true((1/n) %in% tapply(trans.row$tplan$mass, trans.row$tplan$to, sum))
-  testthat::expect_lte(sum((transtest$mass-trans$tplan$mass)^2), 1e-5)
+  # testthat::expect_lte(sum((transtest$mass-trans$tplan$mass)^2), 1e-5)
+  testthat::expect_error(transtest <- transport_plan_given_C(rep(1/n,n), rep(1/n,n),  2, cost = cost_calc(A,B,2), "sinkhorn2", niter = niter))
   
 })
 
@@ -555,61 +556,61 @@ testthat::test_that("greenkhorn works", {
   
 })
 
-testthat::test_that("randkhorn works", {
-  testthat::skip("Not implemented")
-  set.seed(12308947)
-  n <- 32
-  d <- 5
-  set.seed(293897)
-  A <- matrix(rnorm(n*d),nrow=d,ncol=n)
-  B <- matrix(rnorm(n*d),nrow=d,ncol=n)
-  transp.meth <- "randkhorn"
-  niter = 1e2
-  
-  trans <- transport_plan(A, B, 
-                          p = 2, 
-                          ground_p = 2, 
-                          observation.orientation = "colwise", 
-                          method = transp.meth, niter = niter)
-  trans.row <- transport_plan(t(A), t(B), 
-                              p = 2, ground_p = 2, 
-                              observation.orientation = "rowwise",
-                              method = transp.meth, niter = niter)
-  transtest <- transport_plan_given_C(rep(1/n,n), rep(1/n,n),  p = 2, cost = cost_calc(A,B,2), method = "sinkhorn", niter = niter)
-  
-  testthat::expect_true((1/n) %in% tapply(trans$tplan$mass, trans$tplan$to, sum))
-  testthat::expect_true((1/n) %in% tapply(trans.row$tplan$mass, trans.row$tplan$to, sum))
-  testthat::expect_lte(sum((transtest$mass-trans$tplan$mass)^2), 1e-6)
-  
-})
+# testthat::test_that("randkhorn works", {
+#   testthat::skip("Not implemented")
+#   set.seed(12308947)
+#   n <- 32
+#   d <- 5
+#   set.seed(293897)
+#   A <- matrix(rnorm(n*d),nrow=d,ncol=n)
+#   B <- matrix(rnorm(n*d),nrow=d,ncol=n)
+#   transp.meth <- "randkhorn"
+#   niter = 1e2
+#   
+#   trans <- transport_plan(A, B, 
+#                           p = 2, 
+#                           ground_p = 2, 
+#                           observation.orientation = "colwise", 
+#                           method = transp.meth, niter = niter)
+#   trans.row <- transport_plan(t(A), t(B), 
+#                               p = 2, ground_p = 2, 
+#                               observation.orientation = "rowwise",
+#                               method = transp.meth, niter = niter)
+#   transtest <- transport_plan_given_C(rep(1/n,n), rep(1/n,n),  p = 2, cost = cost_calc(A,B,2), method = "sinkhorn", niter = niter)
+#   
+#   testthat::expect_true((1/n) %in% tapply(trans$tplan$mass, trans$tplan$to, sum))
+#   testthat::expect_true((1/n) %in% tapply(trans.row$tplan$mass, trans.row$tplan$to, sum))
+#   testthat::expect_lte(sum((transtest$mass-trans$tplan$mass)^2), 1e-6)
+#   
+# })
 
-testthat::test_that("gandkhorn works", {
-  testthat::skip("Not implemented")
-  set.seed(12308947)
-  n <- 32
-  d <- 5
-  set.seed(293897)
-  A <- matrix(rnorm(n*d),nrow=d,ncol=n)
-  B <- matrix(rnorm(n*d),nrow=d,ncol=n)
-  transp.meth <- "gandkhorn"
-  niter = 1e2
-  
-  trans <- transport_plan(A, B, 
-                          p = 2, ground_p = 2,
-                          observation.orientation = "colwise", 
-                          method = transp.meth, niter = niter)
-  trans.row <- transport_plan(t(A), t(B), 
-                              p = 2, ground_p = 2, 
-                              observation.orientation = "rowwise", 
-                              method = transp.meth, niter = niter)
-  transtest <- transport_plan_given_C(rep(1/n,n), rep(1/n,n),  p = 2, 
-                                      cost = cost_calc(A,B,2), method = "greenkhorn", niter = niter)
-
-  testthat::expect_true((1/n) %in% tapply(trans$tplan$mass, trans$tplan$to, sum))
-  testthat::expect_true((1/n) %in% tapply(trans.row$tplan$mass, trans.row$tplan$to, sum))
-  testthat::expect_lte(sum((transtest$mass-trans$tplan$mass)^2), 3e-3)
-
-})
+# testthat::test_that("gandkhorn works", {
+#   testthat::skip("Not implemented")
+#   set.seed(12308947)
+#   n <- 32
+#   d <- 5
+#   set.seed(293897)
+#   A <- matrix(rnorm(n*d),nrow=d,ncol=n)
+#   B <- matrix(rnorm(n*d),nrow=d,ncol=n)
+#   transp.meth <- "gandkhorn"
+#   niter = 1e2
+#   
+#   trans <- transport_plan(A, B, 
+#                           p = 2, ground_p = 2,
+#                           observation.orientation = "colwise", 
+#                           method = transp.meth, niter = niter)
+#   trans.row <- transport_plan(t(A), t(B), 
+#                               p = 2, ground_p = 2, 
+#                               observation.orientation = "rowwise", 
+#                               method = transp.meth, niter = niter)
+#   transtest <- transport_plan_given_C(rep(1/n,n), rep(1/n,n),  p = 2, 
+#                                       cost = cost_calc(A,B,2), method = "greenkhorn", niter = niter)
+# 
+#   testthat::expect_true((1/n) %in% tapply(trans$tplan$mass, trans$tplan$to, sum))
+#   testthat::expect_true((1/n) %in% tapply(trans.row$tplan$mass, trans.row$tplan$to, sum))
+#   testthat::expect_lte(sum((transtest$mass-trans$tplan$mass)^2), 3e-3)
+# 
+# })
 
 testthat::test_that("transport swapping works", {
   set.seed(203987)
