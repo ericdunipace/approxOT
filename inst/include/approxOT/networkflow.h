@@ -1,11 +1,20 @@
-#include "networkflow.h"
+#ifndef NETWORKFLOW_H
+#define NETWORKFLOW_H
+// from https://github.com/cran/transport/blob/f2cea92550cc15634a38e8163ebc68fc30ec6816/src/networksimplex.cpp
+#include "../approxOT_types.h"
+#ifdef _OPENMP
+# include <omp.h>
+#endif
+#include <iostream>
+#include <vector>
+#include "network_simplex_simple.h"
+#include <stdio.h>
+
 using namespace Rcpp;
 using namespace std;
 using namespace lemon;
-//[[Rcpp::depends(RcppEigen)]]
 
-
-void trans_networkflow(const Eigen::VectorXd & a, const Eigen::VectorXd & b, const matrix & C, 
+static inline void trans_networkflow(const Eigen::VectorXd & a, const Eigen::VectorXd & b, const matrix & C, 
                        matrix & Tplan, int threads, bool acc, int niter){
 #ifdef _OPENMP
   omp_set_num_threads(threads); //check whether this still causes trouble for people without openmp
@@ -47,14 +56,14 @@ void trans_networkflow(const Eigen::VectorXd & a, const Eigen::VectorXd & b, con
   }
   net.supplyMap(&weights1[0], n1, &weights2[0], n2);
   net.run();
-  double resultdist = net.totalCost(); 
+  // double resultdist = net.totalCost(); 
   
   std::vector<TsFlow> flow;
   flow.reserve(n1 + n2 - 1);
   // Eigen::MatrixXd Tplan=Eigen::MatrixXd::Constant(n1,n2,  0);
   // Eigen::MatrixXd Tframe=Eigen::MatrixXd::Constant(n1*n2,3,  0);
   // Eigen::MatrixXd Tpot=Eigen::MatrixXd::Constant(n1+n2,1,  0);
-  int count=0;
+  // int count=0;
   for (int64_t i = 0; i < n1; i++) {
     for (int64_t j = 0; j < n2; j++)
     {
@@ -64,7 +73,7 @@ void trans_networkflow(const Eigen::VectorXd & a, const Eigen::VectorXd & b, con
       // Tframe(count,0)=i+1;
       // Tframe(count,1)=j+1;
       // Tframe(count,2)=f.amount;
-      count+=1;
+      // count+=1;
     }
   }
   // for (int64_t i = 0; i < (n1); i++) {
@@ -77,3 +86,5 @@ void trans_networkflow(const Eigen::VectorXd & a, const Eigen::VectorXd & b, con
   // return  Tplan;
   if((1.0 - Tplan.sum()) > 1e-5) Rcpp::warning("networkflow hasn't found feasible solution yet. increase number of iterations!");
 }
+
+#endif //SHORTSIMPLEX_H

@@ -1,31 +1,36 @@
-#include "trans_greenkhorn.h"
+#ifndef TRANS_GREENKHORN_H
+#define TRANS_GREENKHORN_H
 
-// double rho(double a, double b) {
-//   return(b  - a + a * (std::log(a) - std::log(b)));
-// }
-// 
-// vector rho_vec(vector & a, vector & b) {
-//   return(b.array()  - a.array() + a.array() * (a.array().log() - b.array().log()));
-// }
+#include "../approxOT_types.h"
 
-// int argmax_rho (const vector & a, const vector & b) {
-//   vector r = rho_vec(a,b);
-//   Eigen::Index maxIndex;
-//   
-//   r.maxCoeff(&maxIndex);
-//   
-//   int which_max = maxIndex;
-//   return(which_max);
-// }
+static inline Eigen::VectorXd rho_vec(const Eigen::VectorXd & a, const Eigen::VectorXd & b) {
+  return ( b.array()  - a.array() +  a.array() * ( a.array().log() - b.array().log() ) );
+}
 
-int argmax_rho (const vector & r) {
-  // vector r = rho_vec(a,b);
+static inline int argmax_rho (const Eigen::VectorXd & r) {
+  // Eigen::VectorXd r = rho_vec(a,b);
   Eigen::Index maxIndex;
   
   r.maxCoeff(&maxIndex);
   
   int which_max = maxIndex;
   return(which_max);
+}
+
+
+static inline double dist_approx_ot(const refVecConst & mass_a, const refVecConst & mass_b,
+                      const Eigen::VectorXd & r, const Eigen::VectorXd & c, int p) {
+  Eigen::VectorXd rdiff = r - mass_a;
+  Eigen::VectorXd cdiff = c - mass_b;
+  double out = 0.0;
+  if(p == 2) {
+    out = rdiff.norm() + cdiff.norm();
+  } else if ( p == 1) {
+    out = rdiff.lpNorm<1>() + cdiff.lpNorm<1>();
+  } else {
+    Rcpp::stop("Other norms not supported");
+  }
+  return (out);
 }
 
 // Algorithm 4 of Altschuler, J., Weed, J., & Rigollet, P. (2017). Near-linear time approximation 
@@ -42,14 +47,14 @@ int argmax_rho (const vector & r) {
 //   A = A_0;
 //   // matrix A_0 = exp_cost;
 //   // A = exp_cost.array()/exp_cost.lpNorm<1>();
-//   vector log_a = mass_a.array().log();
-//   vector log_b = mass_b.array().log();
-//   vector x = vector::Zero(N);
-//   vector y = vector::Zero(M);
-//   vector r = A.rowwise().sum();
-//   vector c = A.colwise().sum();
-//   vector rho_vals_r = rho_vec(mass_a, r);
-//   vector rho_vals_c = rho_vec(mass_b, c);
+//   Eigen::VectorXd log_a = mass_a.array().log();
+//   Eigen::VectorXd log_b = mass_b.array().log();
+//   Eigen::VectorXd x = vector::Zero(N);
+//   Eigen::VectorXd y = vector::Zero(M);
+//   Eigen::VectorXd r = A.rowwise().sum();
+//   Eigen::VectorXd c = A.colwise().sum();
+//   Eigen::VectorXd rho_vals_r = rho_vec(mass_a, r);
+//   Eigen::VectorXd rho_vals_c = rho_vec(mass_b, c);
 // 
 //   for( int i = 0; i < niterations; i ++){
 //     int I = argmax_rho(rho_vals_r);
@@ -84,48 +89,64 @@ int argmax_rho (const vector & r) {
 //   }
 // }
 
+//' Generates approximate optimal transport plans 
+//' using the greenkhorn algorithm
+//'
+//' @param mass_a A reference to an Eigen::VectorXd
+//' giving the empirical mass in sample 1
+//' @param mass_b A reference to an Eigen::VectorXd
+//' giving the empirical mass in sample 2
+//' @param exp_cost A reference to an Eigen::MatrixXd giving 
+//' the cost between samples A and B
+//' @param A The assignment matrix
+//' @param eta The inverse of lambda value used for 
+//' the entropy penalty
+//' @param epsilon The desired error bound
+//' @param niterations The iterations to use for the methods
+//' @return void
+//' @keywords internal
 // code adapted from https://github.com/JasonAltschuler/OptimalTransportNIPS17/blob/master/algorithms/greenkhorn.m
-void trans_greenkhorn(const refVecConst & mass_a, const refVecConst & mass_b,
+static inline void trans_greenkhorn(const refVecConst & mass_a, const refVecConst & mass_b,
                       const matrix & exp_cost,
                       matrix & A,
                       double eta, double epsilon, int niterations) {
-  int N = mass_a.size();
-  int M = mass_b.size();
-
+  // int N = mass_a.size();
+  // int M = mass_b.size();
+  
   A = exp_cost.array()/exp_cost.lpNorm<1>(); //can probably just use sum
   // A = A_0;
   // matrix A_0 = exp_cost;
-  // vector log_a = mass_a.array().log(); //not working on log-scale but maybe should?
-  // vector log_b = mass_b.array().log();
-  vector r = A.rowwise().sum();
-  vector c = A.colwise().sum();
-  vector rho_vals_r = rho_vec(mass_a, r);
-  vector rho_vals_c = rho_vec(mass_b, c);
-
+  // Eigen::VectorXd log_a = mass_a.array().log(); //not working on log-scale but maybe should?
+  // Eigen::VectorXd log_b = mass_b.array().log();
+  Eigen::VectorXd r = A.rowwise().sum();
+  Eigen::VectorXd c = A.colwise().sum();
+  Eigen::VectorXd rho_vals_r = rho_vec(mass_a, r);
+  Eigen::VectorXd rho_vals_c = rho_vec(mass_b, c);
+  
   for( int i = 0; i < niterations; i ++){
     int I = argmax_rho(rho_vals_r);
     int J = argmax_rho(rho_vals_c);
-
+    
     if (rho_vals_r(I) > rho_vals_c(J)) {
       // double x = log_a(I) - std::log(r(I));
       double scale_x = mass_a(I)/r(I);
-      vector A_row = A.row(I);
-      // vector A_new_row = std::exp(x) * A_row;
-      vector A_new_row = scale_x * A_row;
-
+      Eigen::VectorXd A_row = A.row(I);
+      // Eigen::VectorXd A_new_row = std::exp(x) * A_row;
+      Eigen::VectorXd A_new_row = scale_x * A_row;
+      
       A.row(I) = A_new_row;
       r(I) = mass_a(I);
       c += A_new_row - A_row;
       rho_vals_r(I) = 0.0;
       rho_vals_c = rho_vec(mass_b, c);
-
+      
     } else {
       // double y = log_b(J) - std::log(c(J));
       double scale_y = mass_b(J)/c(J);
-      vector A_col = A.col(J);
-      // vector A_col_new = std::exp(y) * A_col;
-      vector A_col_new = scale_y * A_col;
-
+      Eigen::VectorXd A_col = A.col(J);
+      // Eigen::VectorXd A_col_new = std::exp(y) * A_col;
+      Eigen::VectorXd A_col_new = scale_y * A_col;
+      
       A.col(J) = A_col_new;
       c(J) = mass_b(J);
       r += A_col_new - A_col;
@@ -149,3 +170,4 @@ void trans_greenkhorn(const refVecConst & mass_a, const refVecConst & mass_b,
   }
   A /= A.sum();
 }
+#endif //TRANS_GREENKHORN_H

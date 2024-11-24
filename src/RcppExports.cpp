@@ -59,45 +59,31 @@ BEGIN_RCPP
 END_RCPP
 }
 // hilbert_proj_
-Rcpp::IntegerVector hilbert_proj_(const matrix& A);
+Rcpp::IntegerVector hilbert_proj_(const Eigen::MatrixXd& A);
 RcppExport SEXP _approxOT_hilbert_proj_(SEXP ASEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const matrix& >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type A(ASEXP);
     rcpp_result_gen = Rcpp::wrap(hilbert_proj_(A));
     return rcpp_result_gen;
 END_RCPP
 }
 // round_2_feasible_
-matrix round_2_feasible_(matrix& F, const vector& mass_a, const vector& mass_b);
+matrix round_2_feasible_(matrix& F, const Eigen::VectorXd& mass_a, const Eigen::VectorXd& mass_b);
 RcppExport SEXP _approxOT_round_2_feasible_(SEXP FSEXP, SEXP mass_aSEXP, SEXP mass_bSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< matrix& >::type F(FSEXP);
-    Rcpp::traits::input_parameter< const vector& >::type mass_a(mass_aSEXP);
-    Rcpp::traits::input_parameter< const vector& >::type mass_b(mass_bSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type mass_a(mass_aSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type mass_b(mass_bSEXP);
     rcpp_result_gen = Rcpp::wrap(round_2_feasible_(F, mass_a, mass_b));
     return rcpp_result_gen;
 END_RCPP
 }
-// generate_S
-matrix generate_S(const matrix& cost, vector& f, vector& g, double eta);
-RcppExport SEXP _approxOT_generate_S(SEXP costSEXP, SEXP fSEXP, SEXP gSEXP, SEXP etaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const matrix& >::type cost(costSEXP);
-    Rcpp::traits::input_parameter< vector& >::type f(fSEXP);
-    Rcpp::traits::input_parameter< vector& >::type g(gSEXP);
-    Rcpp::traits::input_parameter< double >::type eta(etaSEXP);
-    rcpp_result_gen = Rcpp::wrap(generate_S(cost, f, g, eta));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rowLogSumExp
-vector rowLogSumExp(matrix Mat);
+Eigen::VectorXd rowLogSumExp(matrix Mat);
 RcppExport SEXP _approxOT_rowLogSumExp(SEXP MatSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -108,7 +94,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // colLogSumExp
-vector colLogSumExp(matrix Mat);
+Eigen::VectorXd colLogSumExp(matrix Mat);
 RcppExport SEXP _approxOT_colLogSumExp(SEXP MatSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -118,74 +104,88 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// generate_S
+matrix generate_S(const matrix& cost, Eigen::VectorXd& f, Eigen::VectorXd& g, double eta);
+RcppExport SEXP _approxOT_generate_S(SEXP costSEXP, SEXP fSEXP, SEXP gSEXP, SEXP etaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const matrix& >::type cost(costSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type f(fSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type g(gSEXP);
+    Rcpp::traits::input_parameter< double >::type eta(etaSEXP);
+    rcpp_result_gen = Rcpp::wrap(generate_S(cost, f, g, eta));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rowMin_eps
-vector rowMin_eps(const matrix& cost, vector& f, vector& g, double eta);
+Eigen::VectorXd rowMin_eps(const matrix& cost, Eigen::VectorXd& f, Eigen::VectorXd& g, double eta);
 RcppExport SEXP _approxOT_rowMin_eps(SEXP costSEXP, SEXP fSEXP, SEXP gSEXP, SEXP etaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const matrix& >::type cost(costSEXP);
-    Rcpp::traits::input_parameter< vector& >::type f(fSEXP);
-    Rcpp::traits::input_parameter< vector& >::type g(gSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type f(fSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type g(gSEXP);
     Rcpp::traits::input_parameter< double >::type eta(etaSEXP);
     rcpp_result_gen = Rcpp::wrap(rowMin_eps(cost, f, g, eta));
     return rcpp_result_gen;
 END_RCPP
 }
 // colMin_eps
-vector colMin_eps(const matrix& cost, vector& f, vector& g, double eta);
+Eigen::VectorXd colMin_eps(const matrix& cost, Eigen::VectorXd& f, Eigen::VectorXd& g, double eta);
 RcppExport SEXP _approxOT_colMin_eps(SEXP costSEXP, SEXP fSEXP, SEXP gSEXP, SEXP etaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const matrix& >::type cost(costSEXP);
-    Rcpp::traits::input_parameter< vector& >::type f(fSEXP);
-    Rcpp::traits::input_parameter< vector& >::type g(gSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type f(fSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type g(gSEXP);
     Rcpp::traits::input_parameter< double >::type eta(etaSEXP);
     rcpp_result_gen = Rcpp::wrap(colMin_eps(cost, f, g, eta));
     return rcpp_result_gen;
 END_RCPP
 }
 // rowMin_eps_KL
-vector rowMin_eps_KL(const matrix& cost, vector& f, vector& g, double eta, vector& log_a, vector& log_b);
+Eigen::VectorXd rowMin_eps_KL(const matrix& cost, Eigen::VectorXd& f, Eigen::VectorXd& g, double eta, Eigen::VectorXd& log_a, Eigen::VectorXd& log_b);
 RcppExport SEXP _approxOT_rowMin_eps_KL(SEXP costSEXP, SEXP fSEXP, SEXP gSEXP, SEXP etaSEXP, SEXP log_aSEXP, SEXP log_bSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const matrix& >::type cost(costSEXP);
-    Rcpp::traits::input_parameter< vector& >::type f(fSEXP);
-    Rcpp::traits::input_parameter< vector& >::type g(gSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type f(fSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type g(gSEXP);
     Rcpp::traits::input_parameter< double >::type eta(etaSEXP);
-    Rcpp::traits::input_parameter< vector& >::type log_a(log_aSEXP);
-    Rcpp::traits::input_parameter< vector& >::type log_b(log_bSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type log_a(log_aSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type log_b(log_bSEXP);
     rcpp_result_gen = Rcpp::wrap(rowMin_eps_KL(cost, f, g, eta, log_a, log_b));
     return rcpp_result_gen;
 END_RCPP
 }
 // colMin_eps_KL
-vector colMin_eps_KL(const matrix& cost, vector& f, vector& g, double eta, vector& log_a, vector& log_b);
+Eigen::VectorXd colMin_eps_KL(const matrix& cost, Eigen::VectorXd& f, Eigen::VectorXd& g, double eta, Eigen::VectorXd& log_a, Eigen::VectorXd& log_b);
 RcppExport SEXP _approxOT_colMin_eps_KL(SEXP costSEXP, SEXP fSEXP, SEXP gSEXP, SEXP etaSEXP, SEXP log_aSEXP, SEXP log_bSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const matrix& >::type cost(costSEXP);
-    Rcpp::traits::input_parameter< vector& >::type f(fSEXP);
-    Rcpp::traits::input_parameter< vector& >::type g(gSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type f(fSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type g(gSEXP);
     Rcpp::traits::input_parameter< double >::type eta(etaSEXP);
-    Rcpp::traits::input_parameter< vector& >::type log_a(log_aSEXP);
-    Rcpp::traits::input_parameter< vector& >::type log_b(log_bSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type log_a(log_aSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type log_b(log_bSEXP);
     rcpp_result_gen = Rcpp::wrap(colMin_eps_KL(cost, f, g, eta, log_a, log_b));
     return rcpp_result_gen;
 END_RCPP
 }
 // sinkhorn_pot_
-Rcpp::List sinkhorn_pot_(const vector& mass_a, const vector& mass_b, const matrix& cost_matrix, double epsilon, int niterations, bool unbiased, const matrix& cost_matrix_A, const matrix& cost_matrix_B);
+Rcpp::List sinkhorn_pot_(const Eigen::VectorXd& mass_a, const Eigen::VectorXd& mass_b, const matrix& cost_matrix, double epsilon, int niterations, bool unbiased, const matrix& cost_matrix_A, const matrix& cost_matrix_B);
 RcppExport SEXP _approxOT_sinkhorn_pot_(SEXP mass_aSEXP, SEXP mass_bSEXP, SEXP cost_matrixSEXP, SEXP epsilonSEXP, SEXP niterationsSEXP, SEXP unbiasedSEXP, SEXP cost_matrix_ASEXP, SEXP cost_matrix_BSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const vector& >::type mass_a(mass_aSEXP);
-    Rcpp::traits::input_parameter< const vector& >::type mass_b(mass_bSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type mass_a(mass_aSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type mass_b(mass_bSEXP);
     Rcpp::traits::input_parameter< const matrix& >::type cost_matrix(cost_matrixSEXP);
     Rcpp::traits::input_parameter< double >::type epsilon(epsilonSEXP);
     Rcpp::traits::input_parameter< int >::type niterations(niterationsSEXP);
@@ -197,13 +197,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // sinkhorn_pot_log_
-Rcpp::List sinkhorn_pot_log_(const vector& mass_a, const vector& mass_b, const matrix& cost_matrix, double epsilon, int niterations, bool unbiased, const matrix& cost_matrix_A, const matrix& cost_matrix_B);
+Rcpp::List sinkhorn_pot_log_(const Eigen::VectorXd& mass_a, const Eigen::VectorXd& mass_b, const matrix& cost_matrix, double epsilon, int niterations, bool unbiased, const matrix& cost_matrix_A, const matrix& cost_matrix_B);
 RcppExport SEXP _approxOT_sinkhorn_pot_log_(SEXP mass_aSEXP, SEXP mass_bSEXP, SEXP cost_matrixSEXP, SEXP epsilonSEXP, SEXP niterationsSEXP, SEXP unbiasedSEXP, SEXP cost_matrix_ASEXP, SEXP cost_matrix_BSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const vector& >::type mass_a(mass_aSEXP);
-    Rcpp::traits::input_parameter< const vector& >::type mass_b(mass_bSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type mass_a(mass_aSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type mass_b(mass_bSEXP);
     Rcpp::traits::input_parameter< const matrix& >::type cost_matrix(cost_matrixSEXP);
     Rcpp::traits::input_parameter< double >::type epsilon(epsilonSEXP);
     Rcpp::traits::input_parameter< int >::type niterations(niterationsSEXP);
@@ -255,15 +255,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // transport_swap_
-Rcpp::List transport_swap_(const Rcpp::NumericMatrix& A_, const Rcpp::NumericMatrix& B_, matrixI& idx_, vector& mass_, double p, double ground_p, double tolerance_, int niter_);
+Rcpp::List transport_swap_(const Rcpp::NumericMatrix& A_, const Rcpp::NumericMatrix& B_, Eigen::MatrixXi& idx_, Eigen::VectorXd& mass_, double p, double ground_p, double tolerance_, int niter_);
 RcppExport SEXP _approxOT_transport_swap_(SEXP A_SEXP, SEXP B_SEXP, SEXP idx_SEXP, SEXP mass_SEXP, SEXP pSEXP, SEXP ground_pSEXP, SEXP tolerance_SEXP, SEXP niter_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type A_(A_SEXP);
     Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type B_(B_SEXP);
-    Rcpp::traits::input_parameter< matrixI& >::type idx_(idx_SEXP);
-    Rcpp::traits::input_parameter< vector& >::type mass_(mass_SEXP);
+    Rcpp::traits::input_parameter< Eigen::MatrixXi& >::type idx_(idx_SEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type mass_(mass_SEXP);
     Rcpp::traits::input_parameter< double >::type p(pSEXP);
     Rcpp::traits::input_parameter< double >::type ground_p(ground_pSEXP);
     Rcpp::traits::input_parameter< double >::type tolerance_(tolerance_SEXP);
@@ -320,9 +320,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_approxOT_multi_marg_given_dist_", (DL_FUNC) &_approxOT_multi_marg_given_dist_, 6},
     {"_approxOT_hilbert_proj_", (DL_FUNC) &_approxOT_hilbert_proj_, 1},
     {"_approxOT_round_2_feasible_", (DL_FUNC) &_approxOT_round_2_feasible_, 3},
-    {"_approxOT_generate_S", (DL_FUNC) &_approxOT_generate_S, 4},
     {"_approxOT_rowLogSumExp", (DL_FUNC) &_approxOT_rowLogSumExp, 1},
     {"_approxOT_colLogSumExp", (DL_FUNC) &_approxOT_colLogSumExp, 1},
+    {"_approxOT_generate_S", (DL_FUNC) &_approxOT_generate_S, 4},
     {"_approxOT_rowMin_eps", (DL_FUNC) &_approxOT_rowMin_eps, 4},
     {"_approxOT_colMin_eps", (DL_FUNC) &_approxOT_colMin_eps, 4},
     {"_approxOT_rowMin_eps_KL", (DL_FUNC) &_approxOT_rowMin_eps_KL, 6},

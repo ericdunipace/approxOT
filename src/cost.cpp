@@ -1,73 +1,5 @@
-#include "cost.h"
+#include "approxOT/cost.h"
 
-int dist_2d_to_1d_(int i, int j, int n) {
-  if((i >= 0) && (j >= 0) && (i < n) && (j < n)) {
-    int ii = i;
-    int jj = j;
-    if(ii < jj) {
-      ii = j;
-      jj = i;
-    }
-    int k = (2 * n - jj - 1) * (jj) / 2 + (ii - jj) - 1;
-    if(k < 0) {
-      Rcpp::Rcout << 
-        "i: " << i <<
-          ", j: " << j <<
-            ", ii: " << ii <<
-              ", jj: " << jj <<
-            ", n: " << n << 
-              ", and k: " << k << ". ";
-      Rcpp::stop("Non-valid result in dist_2d_to_1d_ function");
-    }
-    return(k);
-  } else {
-    Rcpp::Rcout << 
-                   "i: " << i <<
-                   ", j: " << j <<
-                   ", and n: " << n << ". ";
-    Rcpp::stop("Non-valid indexes in dist_2d_to_1d_ function");
-  }
-}
-
-
-void cost_calculation_Lp(const refMatConst & A, const refMatConst & B, matrix & cost_matrix, double p) {
-  double p_inv = 1.0/p;
-  
-  for (int j = 0; j < B.cols(); j++) { 
-    vector bvec = B.col(j);
-    for (int i = 0; i < A.cols(); i++) {
-      double cost_p = (A.col(i)-bvec).array().pow(p).sum();
-      cost_matrix(i,j) = std::pow(cost_p, p_inv);
-    }
-  }
-}
-
-void cost_calculation_L2(const refMatConst & A, const refMatConst & B, matrix & cost_matrix) {
-  for (int j = 0; j < B.cols(); j++) { 
-    vector bvec = B.col(j);
-    for (int i = 0; i < A.cols(); i++) {
-      cost_matrix(i,j) = (A.col(i)-bvec).norm();
-    }
-  }
-}
-
-void cost_calculation_L2sq(const refMatConst & A, const refMatConst & B, matrix & cost_matrix) {
-  for (int j = 0; j < B.cols(); j++) { 
-    vector bvec = B.col(j);
-    for (int i = 0; i < A.cols(); i++) {
-      cost_matrix(i,j) = (A.col(i)-bvec).squaredNorm();
-    }
-  }
-}
-
-void cost_calculation_L1(const refMatConst & A, const refMatConst & B, matrix & cost_matrix) {
-  for (int j = 0; j < B.cols(); j++) { 
-    vector bvec = B.col(j);
-    for (int i = 0; i < A.cols(); i++) {
-      cost_matrix(i,j) = (A.col(i)-bvec).cwiseAbs().sum();
-    }
-  }
-}
 
 //[[Rcpp::export]]
 Rcpp::NumericMatrix cost_calculation_(const Rcpp::NumericMatrix & A_, const Rcpp::NumericMatrix & B_, const double p) {
@@ -108,7 +40,7 @@ double multi_marg_final_cost_L2(const Rcpp::List & idx_,
       for(int d = 0; d < D; d ++) temp(d,n) = Rcpp::as<Rcpp::NumericMatrix>(data_[n])(d, cur_idx);
     }
     // Rcpp::Rcout << temp.sum()<<", ";
-    vector mean = temp.rowwise().mean();
+    Eigen::VectorXd mean = temp.rowwise().mean();
     // Rcpp::Rcout << mean.sum()<<", ";
     temp.noalias() = temp.colwise() - mean;
     // Rcpp::Rcout << temp.sum()<<", ";
@@ -135,7 +67,7 @@ double multi_marg_final_cost_(const Rcpp::List & idx_,
     double cost = 0.0;
     for( int m = 0; m < M; m ++) {
       matrix temp(D,N);
-      vector cost_vec = vector::Zero(D);
+      Eigen::VectorXd cost_vec = Eigen::VectorXd::Zero(D);
       
       for(int n = 0; n < N; n ++) {
         int cur_idx = Rcpp::as<Rcpp::IntegerVector>(idx_[n])[m] - 1; // -1 to adjust R to C indexing
@@ -144,7 +76,7 @@ double multi_marg_final_cost_(const Rcpp::List & idx_,
       }
       
       for(int n = 0; n < (N-1); n ++) {
-        Eigen::Ref<vector> temp_col = temp.col(n);
+        Eigen::Ref<Eigen::VectorXd> temp_col = temp.col(n);
         for(int nn = n+1; nn < N; nn++) {
           cost_vec += (temp_col - temp.col(nn)).array().abs().pow(ground_p).matrix();
         }

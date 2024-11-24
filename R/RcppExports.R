@@ -26,16 +26,16 @@ round_2_feasible_ <- function(F, mass_a, mass_b) {
     .Call(`_approxOT_round_2_feasible_`, F, mass_a, mass_b)
 }
 
-generate_S <- function(cost, f, g, eta) {
-    .Call(`_approxOT_generate_S`, cost, f, g, eta)
-}
-
 rowLogSumExp <- function(Mat) {
     .Call(`_approxOT_rowLogSumExp`, Mat)
 }
 
 colLogSumExp <- function(Mat) {
     .Call(`_approxOT_colLogSumExp`, Mat)
+}
+
+generate_S <- function(cost, f, g, eta) {
+    .Call(`_approxOT_generate_S`, cost, f, g, eta)
 }
 
 rowMin_eps <- function(cost, f, g, eta) {

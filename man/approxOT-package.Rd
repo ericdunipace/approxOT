@@ -2,8 +2,8 @@
 % Please edit documentation in R/approxOT-package.R
 \docType{package}
 \name{approxOT}
-\alias{approxOT}
 \alias{approxOT-package}
+\alias{approxOT}
 \title{An R package to perform exact and approximate optimal transport.}
 \description{
 R and C++ functions to perform exact and approximate optimal transport. All C++ methods are linkable to other R packages via their header files.
