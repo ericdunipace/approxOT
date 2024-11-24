@@ -260,6 +260,7 @@ transport_plan <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
   
   obs <- match.arg(observation.orientation)
   method <- match.arg(method)
+  if(method == "exact") method <- "networkflow"
   
   if (!is.matrix(X)) {
     X <- as.matrix(X)
