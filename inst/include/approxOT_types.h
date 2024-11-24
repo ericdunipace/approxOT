@@ -2,8 +2,7 @@
 #define PACKAGENAME_TYPEDEFS_H
 #include <RcppEigen.h>
 
-// ## // [[Rcpp::depends(RcppEigen)]]
-typedef Eigen::VectorXd vector;
+typedef Eigen::VectorXd Vector;
 typedef Eigen::Matrix<long double, Eigen::Dynamic,  1> vectorLD;
 typedef Eigen::VectorXi vectorI;
 
@@ -17,7 +16,7 @@ typedef Eigen::Ref<matrixI> refMatI;
 typedef Eigen::Ref<Eigen::ArrayXi> refArrayI;
 typedef Eigen::Ref<Eigen::ArrayXd> refArray;
 
-typedef Eigen::Ref<vector> refVec;
+typedef Eigen::Ref<Vector> refVec;
 typedef Eigen::Ref<vectorI> refVecI;
 
 typedef Eigen::Ref<const matrix> refMatConst;
@@ -26,7 +25,7 @@ typedef Eigen::Ref<const matrixI> refMatConstI;
 typedef Eigen::Ref<const Eigen::ArrayXd> refArrayConst;
 typedef Eigen::Ref<const Eigen::ArrayXi> refArrayConstI;
 
-typedef Eigen::Ref<const vector> refVecConst;
+typedef Eigen::Ref<const Vector> refVecConst;
 typedef Eigen::Ref<const vectorI> refVecConstI;
 
 typedef matrix::ColXpr ColXpr;
@@ -43,7 +42,7 @@ typedef Eigen::Map<rowMat> rowMatMap;
 
 typedef Eigen::Map<Eigen::VectorXd> vecMap;
 typedef Eigen::Map<vectorLD> vecMapLD;
-typedef Eigen::Map<const vector> vecMapConst;
+typedef Eigen::Map<const Vector> vecMapConst;
 typedef Eigen::Map<Eigen::VectorXi> vecMapI;
 typedef Eigen::Map<const Eigen::VectorXi> vecMapConstI;
 

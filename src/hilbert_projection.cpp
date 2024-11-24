@@ -1,5 +1,5 @@
 #include "approxOT_types.h"
-#include "hilbert_cgal.h"
+#include "approxOT/hilbert_cgal.h"
 
 //' Returns orders along the Hilbert space-filling Curve
 //'
@@ -7,7 +7,7 @@
 //' @return An integer vector of orders
 //' @keywords internal
 // [[Rcpp::export]]
-Rcpp::IntegerVector hilbert_proj_(const matrix & A)
+Rcpp::IntegerVector hilbert_proj_(const Eigen::MatrixXd & A)
 {
   int K = A.rows();
   int N = A.cols();
