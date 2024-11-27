@@ -231,7 +231,7 @@ wasserstein <- function(X = NULL, Y = NULL, a= NULL, b = NULL, cost = NULL, tpla
 
 wasserstein_calc_cost <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2, observation.orientation = c("rowwise","colwise"), 
                          method = transport_options(), ... ) {
-  obs <- match.arg(observation.orientation,  c("colwise","rowwise"))
+  obs <- match.arg(arg = observation.orientation)
   method <- match.arg(method)
   
   if (missing(X)) stop("Must specify X")
