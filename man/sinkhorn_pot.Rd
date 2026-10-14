@@ -29,7 +29,7 @@ sinkhorn_pot(
 
 \item{...}{Additional arguments including
 \itemize{
-\item epsilon: The fraction of the median cost to use as a penalty
+\item epsilon: The entropy penalty, on the same scale as the cost matrix (the plan is proportional to \code{exp(-cost/epsilon)}). Should be > 0.
 \item niter: Number of iterations to run the Sinkhorn algorithm
 \item unbiased: Should the potentials be de-biased TRUE/FALSE
 }}

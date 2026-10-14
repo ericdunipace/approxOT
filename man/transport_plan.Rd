@@ -31,12 +31,12 @@ transport_plan(
 
 \item{observation.orientation}{Are observations by row ("rowwise") or column ("colwise").}
 
-\item{method}{Which transportation method to use. See [transport_options][transport_options]}
+\item{method}{Which transportation method to use. See \link{transport_options}}
 
 \item{...}{Additional arguments for various methods
 \itemize{
 \item"niter": The number of iterations to use for the entropically penalized optimal transport distances
-\item"epsilon": The penalty for entropy penalized optimal transport distances. Should be > 0.
+\item"epsilon": The entropy penalty, on the same scale as the cost matrix (the plan is proportional to \code{exp(-cost/epsilon)}). Should be > 0.
 \item"unbiased": If using Sinkhorn distances, should the distance be de-biased? (TRUE/FALSE)
 \item"nboot": If using sliced Wasserstein distances, specify the number of Monte Carlo samples
 }}
@@ -54,7 +54,7 @@ d <- 10
 x <- matrix(stats::rnorm(d*n), nrow=d, ncol=n)
 y <- matrix(stats::rnorm(d*n), nrow=d, ncol=n)
 #get hilbert sort orders for x in backwards way
-transx <- transport_plan(X=x, Y=x, ground_p = 2, p = 2, 
-                         observation.orientation =  "colwise", 
+transx <- transport_plan(X=x, Y=x, ground_p = 2, p = 2,
+                         observation.orientation =  "colwise",
                          method = "hilbert")
 }

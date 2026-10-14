@@ -1,8 +1,19 @@
 # approxOT
 
-## Changes in Version 1.2.1
+## Changes in Version 1.3
+### Major changes
+* Added OpenMP support for the Sinkhorn algorithm. The log-scale Sinkhorn updates were also rewritten to avoid N×M temporary matrices, giving roughly a 1.4× speedup even on a single thread.
+* By default, approxOT uses half of the available processors (never more than `OMP_THREAD_LIMIT`, and at most 2 during `R CMD check`). Use `approxOT_threads(n)` to change this, `approxOT_threads()` to see the current value, or set `options(approxOT.threads = n)` before loading the package.
+* Packages linking to the approxOT headers run single-threaded unless they call `approxOT_set_threads(n)` from C++.
+* `epsilon` is now used directly as the entropy penalty, on the same scale as the cost, as documented. Previously it was multiplied by the median of the cost matrix. Sinkhorn and Greenkhorn results for a given `epsilon` will differ from earlier versions; to reproduce them, use `epsilon * median(cost)`, where `cost` is the cost matrix after raising it to the power `p`.
+
 ### Minor Improvements and Bug fixes
 * The `shortsimplex.h` header caused a false positive warning on gcc-asan due to the posibility of feeding negative integer to the function; however, this would never happen due to higher level code always passing a positive integer since it is set by the size of the corresponding mass (i.e., an empirical measure passed to the function always has length greater than 0). A guard has been placed to prevent this gcc-asan warning.
+* Fixed the self-transport potentials used for the unbiased Sinkhorn divergence (`unbiased = TRUE` in `wasserstein()` and `sinkhorn_pot()`). The symmetric problems now use the averaged update of Feydy et al. (2019). Previously the self potentials were offset by a constant (and, on the log scale, did not converge and depended on whether `niter` was even or odd), so earlier unbiased Sinkhorn divergences were biased.
+* The log-scale Sinkhorn transport plan now includes the sample weights. Previously they were left out, so plans were wrong for non-uniform weights. Uniform weights were unaffected.
+* Greenkhorn now picks the row or column with the largest absolute margin violation instead of the largest Bregman divergence, which avoids computing logarithms on every iteration and handles zero weights. It stops when the largest violation is below the tolerance. Results at a given `niter` may differ slightly.
+* Unbiased Sinkhorn divergences that are slightly negative due to rounding are now set to 0 instead of returning `NaN`.
+
 
 ## Changes in Version 1.2
 ### Major changes

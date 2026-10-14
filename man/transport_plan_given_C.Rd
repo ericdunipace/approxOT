@@ -33,7 +33,7 @@ transport_plan_given_C(
 \item{...}{Additional arguments for various methods
 \itemize{
 \item "niter": The number of iterations to use for the entropically penalized optimal transport distances
-\item "epsilon": The penalty for entropy penalized optimal transport distances. Should be > 0.
+\item "epsilon": The entropy penalty, on the same scale as the cost matrix (the plan is proportional to \code{exp(-cost/epsilon)}). Should be > 0.
 \item"unbiased": If using Sinkhorn distances, should the distance be de-biased? (TRUE/FALSE)
 }}
 }
@@ -51,7 +51,7 @@ A <- matrix(stats::rnorm(n*d),nrow=d,ncol=n)
 B <- matrix(stats::rnorm(n*d),nrow=d,ncol=n)
 transp.meth <- "sinkhorn"
 niter <- 1e2
-test <- transport_plan_given_C(rep(1/n,n), 
-rep(1/n,n),  2, cost = cost_calc(A,B,2), 
+test <- transport_plan_given_C(rep(1/n,n),
+rep(1/n,n),  2, cost = cost_calc(A,B,2),
 "sinkhorn", niter = niter)
 }

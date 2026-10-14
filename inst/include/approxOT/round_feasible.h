@@ -20,12 +20,13 @@ static inline void round_feasible(matrix & F, const refVecConst & mass_a, const 
    Eigen::VectorXd x = mass_a.cwiseQuotient(a_f).cwiseMin(1.0);
    Eigen::VectorXd y = mass_b.cwiseQuotient(b_f).cwiseMin(1.0);
    
-   matrix F_prime = x.asDiagonal() * F * y.asDiagonal();
+   F.array().colwise() *= x.array();
+   F.array().rowwise() *= y.transpose().array(); 
    
    Eigen::VectorXd err_a = mass_a;
-   err_a -= F_prime.rowwise().sum();
+   err_a -= F.rowwise().sum();
    Eigen::VectorXd err_b = mass_b;
-   err_b -= F_prime.colwise().sum();
+   err_b -= F.colwise().sum();
    
    // Rcpp::Rcout << F_prime.colwise().sum() <<"\n";
    // Rcpp::Rcout << (mass_b - F_prime.colwise().sum().transpose()) <<"\n";
@@ -34,7 +35,6 @@ static inline void round_feasible(matrix & F, const refVecConst & mass_a, const 
    // if((err_a.array() < 0).any()) Rcpp::stop("erra' < 0");
    // if((err_b.array() < 0).any()) Rcpp::stop("errb' < 0");
    // 
-   F.noalias() = F_prime;
    F.noalias() += err_a * err_b.transpose() / err_a.lpNorm<1>();
    // if((F.array() < 0).any()) Rcpp::stop("F < 0");
  }
