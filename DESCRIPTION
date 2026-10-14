@@ -1,7 +1,7 @@
 Package: approxOT
 Type: Package
 Title: Approximate and Exact Optimal Transport Methods
-Version: 1.2.0.9000
+Version: 1.2.1
 Date: 2025-01-09
 Authors@R: 
     c(person("Eric", "Dunipace", 
@@ -45,6 +45,6 @@ BugReports: https://github.com/ericdunipace/approxOT/issues
 Suggests: 
     testthat (>= 2.1.0), transport
 Encoding: UTF-8
-RoxygenNote: 7.3.2
 SystemRequirements: C++17
 URL: https://github.com/ericdunipace/approxOT
+Config/roxygen2/version: 8.1.0
