@@ -15,6 +15,12 @@ inline int & approxOT_nthreads() {
   return n;
 }
 
+// Smallest problem (number of cost matrix entries) split across threads.
+// Below this, starting the threads costs about as much as the work saved.
+// Small problems then never start libgomp's thread pool, whose idle
+// threads valgrind reports as "possibly lost" when R exits.
+constexpr long long approxOT_min_par_size = 1LL << 14;
+
 // n <= 0 uses the default of half the available processors.
 // Never exceeds the processor count or OMP_THREAD_LIMIT, which avoids
 // OpenMP runtime warnings (e.g., CRAN machines set OMP_THREAD_LIMIT=2).

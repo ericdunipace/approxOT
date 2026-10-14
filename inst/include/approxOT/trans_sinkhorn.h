@@ -99,7 +99,8 @@ static inline Eigen::VectorXd rowMin_eps_KL_(const matrix & cost, Eigen::VectorX
   const Eigen::ArrayXd h = log_b.array() + eta * g.array(); 
   Eigen::ArrayXd s(N);
   #ifdef _OPENMP
-    #pragma omp parallel num_threads(approxOT_nthreads())
+    #pragma omp parallel num_threads(approxOT_nthreads()) \
+      if(static_cast<long long>(N) * M >= approxOT_min_par_size)
   #endif
   {
     int t = 0, T = 1;
@@ -139,7 +140,8 @@ static inline Eigen::VectorXd colMin_eps_KL_(const matrix & cost, Eigen::VectorX
   const Eigen::ArrayXd h = log_a.array() + eta * f.array();
   Eigen::VectorXd out(M);
 #ifdef _OPENMP
-  #pragma omp parallel for schedule(static) num_threads(approxOT_nthreads())
+  #pragma omp parallel for schedule(static) num_threads(approxOT_nthreads()) \
+    if(static_cast<long long>(cost.rows()) * M >= approxOT_min_par_size)
 #endif
   for (int j = 0; j < M; ++j) {
     double s = (h + eta * g(j) - eta * cost.col(j).array()).exp().sum();   // shift = old g(j)
