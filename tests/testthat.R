@@ -1,4 +1,4 @@
 library(testthat)
 library(approxOT)
 
-test_check("approxOT")
+test_check("approxOT", reporter = "location")
