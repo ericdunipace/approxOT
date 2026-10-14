@@ -12,7 +12,7 @@ as.transport.plan(transport_matrix, ...)
 \item{...}{Unused arguments}
 }
 \value{
-An object of class `transport.plan`. See output of (transport_plan)[transport_plan]
+An object of class \code{transport.plan}. See output of \link{transport_plan}
 }
 \description{
 Transform transportation matrix to transportation plan
@@ -24,8 +24,8 @@ d <- 2
 x <- matrix(stats::rnorm(d*n), nrow=d, ncol=n)
 y <- matrix(stats::rnorm(d*n), nrow=d, ncol=n)
 #get hilbert sort orders for x in backwards way
-trans_plan <- transport_plan(X=x, Y=x, ground_p = 2, p = 2, 
-                         observation.orientation =  "colwise", 
+trans_plan <- transport_plan(X=x, Y=x, ground_p = 2, p = 2,
+                         observation.orientation =  "colwise",
                          method = "hilbert")
 trans_matrix <- as.matrix(trans_plan$tplan)
 tplan2 <- as.transport.plan(trans_matrix)

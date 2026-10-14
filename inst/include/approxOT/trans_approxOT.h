@@ -18,8 +18,8 @@
 //' @param cost_matrix A reference to an Eigen::MatrixXd giving 
 //' the cost between samples A and b
 //' @param assign_mat The assigment matrix as an Eigen::MatrixXd
-//' @param epsilon The value to multiply the median of the cost matrix
-//' by to get the lambda value used for the entropy penalty
+//' @param epsilon The entropy penalty, on the same scale as
+//' cost_matrix (eta = 1/epsilon)
 //' @param niterations The iterations to use for the methods
 //' @param unbiased Should the Sinkhorn distance be de-biased? (bool)
 //' Note if its unbiased, the transport plan won't be rounded to
@@ -40,8 +40,7 @@
                      const std::string & method,
                      refMat cost_matrix_A, refMat cost_matrix_B) {
    
-   double med_cost = median(cost_matrix);
-   double eta = 1.0 / (epsilon * med_cost); //avoid underflow
+   double eta = 1.0 / epsilon;  
    // double eta = 4 * log(double(mass_a.size())) / epsilon;
    std::string meth = method;
    bool underflow_risk = (cost_matrix.maxCoeff() * eta > 700);
@@ -49,7 +48,6 @@
      Rcpp::warning("Risk of underflow. Switching to log-domain sinkhorn");
      meth = "sinkhorn_log";
    }
-   const matrix exp_cost = (-eta * cost_matrix.array() ).exp();
    double epsilon_prime = 1e-8; //epsilon / (8 * cost_matrix.maxCoeff());
    // double epsilon_prime = epsilon;
    // Rcpp::Rcout << epsilon;
@@ -57,6 +55,7 @@
    // Rcpp::Rcout << " " << epsilon_prime;
    
    if (meth == "sinkhorn") {
+     const matrix exp_cost = (-eta * cost_matrix.array() ).exp();
      Eigen::VectorXd u = Eigen::VectorXd::Zero(mass_a.rows());
      Eigen::VectorXd v = Eigen::VectorXd::Zero(mass_b.rows());
      // if (unbiased) {
@@ -74,8 +73,8 @@
      //                      p, q);
      // 
      // } else {
-     trans_sinkhorn(mass_a, mass_b, exp_cost, assign_mat, eta, epsilon_prime, niterations,
-                    u, v);
+     trans_sinkhorn(u, v, mass_a, mass_b, exp_cost, assign_mat, eta, epsilon_prime, niterations,
+                    false);
      // }
      
      
@@ -87,11 +86,12 @@
      //                         matrix & Assign,
      //                         double eta, double epsilon, int niterations,
      //                         vector & f_pot, vector & g_pot)
-     trans_sinkhorn_log(mass_a, mass_b, cost_matrix, assign_mat, eta, epsilon_prime, niterations,
-                        f, g);
+     trans_sinkhorn_log(f, g, mass_a, mass_b, 
+      cost_matrix, assign_mat, eta, epsilon_prime, niterations, false);
      
      
    } else if (meth == "greenkhorn" ) {
+     const matrix exp_cost = (-eta * cost_matrix.array() ).exp();
      // Rcpp::stop("transport method greenkhorn not found!");
      // trans_greenkhorn(const refVecConst & mass_a, const refVecConst & mass_b, 
      //                  const matrix & exp_cost, 

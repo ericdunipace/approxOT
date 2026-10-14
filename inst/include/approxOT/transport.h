@@ -121,9 +121,8 @@ static inline void intNormalizeMass(const refVecConst & a, const refVecConst & b
 //' For use method is "sinkhorn" and unbiased is true.
 //' @param cost_matrix_B The cost matrix between observations in sample 2.
 //' For use method is "sinkhorn" and unbiased is true.
-//' @param epsilon The value to multiple the median of the
-//' cost_matrix by to give a value of lambda for the entropic
-//' penalty
+//' @param epsilon The entropy penalty, on the same scale as
+//' cost_matrix (eta = 1/epsilon)
 //' @param niter The iterations to use for the methods
 //' @param unbiased Should the Sinkhorn distance be de-biased? (bool)
 //' Note if its unbiased, the transport plan won't be rounded to
@@ -241,9 +240,8 @@ static inline void transport_C(const refVecConst & mass_a, const refVecConst & m
 //' grandkhorn", "hilbert", "shortsimplex", "exact",
 //' "networkflow", or "univariate"
 //' @param a_sort Is the data in A already sorted? (bool)
-//' @param epsilon The value to multiple the median of the
-//' cost_matrix by to give a value of lambda for the entropic
-//' penalty
+//' @param epsilon The entropy penalty, on the same scale as
+//' cost_matrix (eta = 1/epsilon)
 //' @param niter The iterations to use for the methods
 //' @param unbiased Should the Sinkhorn distance be de-biased? (bool)
 //' Note if its unbiased, the transport plan won't be rounded to

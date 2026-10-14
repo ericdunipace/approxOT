@@ -18,7 +18,7 @@ The package currently supports the following algorithms to calculate optimal tra
 1.  "exact" or "networkflow": utilizes a network flow algorithm to calculate *exact* optimal transport distances
 2. "shortsimplex": uses the shortlist method of Gottschlich
 and Schuhmacher (2014) to calculate an *exact* optimal transport distance.
-3. "univariate": uses the exact method special to the univariate case.
+3. "univariate": uses the exact method that is special to the univariate case.
 4.  "sinkhorn": use the Sinkhorn distance method of Cuturi (2013) 
 to calculate entropically regularized optimal transport distances.
 An unbiased option also allows the calculation of Sinkhorn divergences (removing the entropic bias).
@@ -30,6 +30,27 @@ An unbiased option also allows the calculation of Sinkhorn divergences (removing
 to improve approximate solutions.
 
 Algorithms 1--3 are exact algorithms. Algorithms 4+ are approximate
+
+## OpenMP Support
+As of version 1.3 of the package, OpenMP threading is supported for the Sinkhorn algorithm. If OpenMP is supported, the number of threads defaults to half the number of processors. To set the number of threads your self, do:
+
+1. Using package function
+```{R}
+# set number of threads to n
+approxOT_threads(n)
+```
+
+2. Using `options()`
+```{R}
+# set number of threads to n
+options(approxOT.threads = n)
+```
+
+To see the current number of threads, do:
+```{R}
+approxOT_threads()
+```
+Note the empty argument to `approxOT_threads`
 
 ## Author
 Eric Dunipace

@@ -48,3 +48,4 @@ Encoding: UTF-8
 SystemRequirements: C++17
 URL: https://github.com/ericdunipace/approxOT
 Config/roxygen2/version: 8.1.0
+Roxygen: list(markdown = TRUE)

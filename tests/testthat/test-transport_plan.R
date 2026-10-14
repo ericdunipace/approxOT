@@ -534,7 +534,44 @@ testthat::test_that("greenkhorn works", {
   testthat::expect_true((1/n) %in% tapply(trans$tplan$mass, trans$tplan$to, sum))
   testthat::expect_true((1/n) %in% tapply(trans.row$tplan$mass, trans.row$tplan$to, sum))
   testthat::expect_lte(sum((transtest$mass-trans$tplan$mass)^2), 1e-3)
-  
+
+})
+
+testthat::test_that("greenkhorn works without switching to log sinkhorn", {
+  set.seed(7340981)
+  n <- 30
+  m <- 20
+  d <- 3
+  x <- matrix(rnorm(n*d), n, d)
+  y <- matrix(rnorm(m*d), m, d) + 1
+  cost <- cost_calc(t(x), t(y), 2.0)^2
+  mass_a <- runif(n) + 0.5
+  mass_a <- mass_a/sum(mass_a)
+  mass_b <- runif(m) + 0.5
+  mass_b <- mass_b/sum(mass_b)
+  epsilon <- 1
+
+  # small enough that the exp-domain methods run without the underflow switch
+  testthat::expect_lt(max(cost)/epsilon, 700)
+
+  # unbiased = TRUE skips rounding, so the margins come from greenkhorn itself
+  testthat::expect_silent(
+    green <- transport_plan_given_C(mass_a, mass_b, 1, cost = cost, method = "greenkhorn",
+                                    epsilon = epsilon, niter = 1e5, unbiased = TRUE)
+  )
+  testthat::expect_silent(
+    sink <- transport_plan_given_C(mass_a, mass_b, 1, cost = cost, method = "sinkhorn",
+                                   epsilon = epsilon, niter = 1e4, unbiased = TRUE,
+                                   cost_a = cost, cost_b = cost)
+  )
+
+  testthat::expect_equal(as.numeric(tapply(green$mass, factor(green$from, 1:n), sum)),
+                         mass_a, tolerance = 1e-6)
+  testthat::expect_equal(as.numeric(tapply(green$mass, factor(green$to, 1:m), sum)),
+                         mass_b, tolerance = 1e-6)
+  testthat::expect_equal(green$mass[order(green$from, green$to)],
+                         sink$mass[order(sink$from, sink$to)],
+                         tolerance = 1e-6)
 })
 
 # testthat::test_that("randkhorn works", {
