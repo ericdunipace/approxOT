@@ -82,6 +82,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// set_threads_
+int set_threads_(int n);
+RcppExport SEXP _approxOT_set_threads_(SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(set_threads_(n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_threads_
+int get_threads_();
+RcppExport SEXP _approxOT_get_threads_() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(get_threads_());
+    return rcpp_result_gen;
+END_RCPP
+}
 // rowLogSumExp
 Eigen::VectorXd rowLogSumExp(matrix Mat);
 RcppExport SEXP _approxOT_rowLogSumExp(SEXP MatSEXP) {
@@ -320,6 +341,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_approxOT_multi_marg_given_dist_", (DL_FUNC) &_approxOT_multi_marg_given_dist_, 6},
     {"_approxOT_hilbert_proj_", (DL_FUNC) &_approxOT_hilbert_proj_, 1},
     {"_approxOT_round_2_feasible_", (DL_FUNC) &_approxOT_round_2_feasible_, 3},
+    {"_approxOT_set_threads_", (DL_FUNC) &_approxOT_set_threads_, 1},
+    {"_approxOT_get_threads_", (DL_FUNC) &_approxOT_get_threads_, 0},
     {"_approxOT_rowLogSumExp", (DL_FUNC) &_approxOT_rowLogSumExp, 1},
     {"_approxOT_colLogSumExp", (DL_FUNC) &_approxOT_colLogSumExp, 1},
     {"_approxOT_generate_S", (DL_FUNC) &_approxOT_generate_S, 4},

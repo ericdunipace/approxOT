@@ -1,8 +1,8 @@
 Package: approxOT
 Type: Package
 Title: Approximate and Exact Optimal Transport Methods
-Version: 1.2.1
-Date: 2025-01-09
+Version: 1.3
+Date: 2026-10-14
 Authors@R: 
     c(person("Eric", "Dunipace", 
         role = c("aut", "cre"),

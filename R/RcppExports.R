@@ -26,6 +26,14 @@ round_2_feasible_ <- function(F, mass_a, mass_b) {
     .Call(`_approxOT_round_2_feasible_`, F, mass_a, mass_b)
 }
 
+set_threads_ <- function(n) {
+    .Call(`_approxOT_set_threads_`, n)
+}
+
+get_threads_ <- function() {
+    .Call(`_approxOT_get_threads_`)
+}
+
 rowLogSumExp <- function(Mat) {
     .Call(`_approxOT_rowLogSumExp`, Mat)
 }
