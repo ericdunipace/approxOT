@@ -9,7 +9,7 @@ static inline double LogSumExp(matrix Mat) {
   return std::log((Mat.array() - max).array().exp().sum()) + max;
 }
 
-static inline Eigen::VectorXd rowLogSumExp_(matrix Mat) {
+static inline Eigen::VectorXd rowLogSumExp_(matrix & Mat) {
   
   Eigen::VectorXd max = Mat.rowwise().maxCoeff();
   // Rcpp::Rcout << "max: " << max << "\n";
@@ -22,7 +22,7 @@ static inline Eigen::VectorXd rowLogSumExp_(matrix Mat) {
   // return (Mat.array().exp().rowwise().sum().log());
 }
 
-static inline Eigen::VectorXd colLogSumExp_(matrix Mat) {
+static inline Eigen::VectorXd colLogSumExp_(matrix & Mat) {
   
   Eigen::RowVectorXd max = Mat.colwise().maxCoeff();
   // Rcpp::Rcout << "max: " << max << "\n";

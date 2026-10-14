@@ -168,7 +168,7 @@ static inline void transport_C(const refVecConst & mass_a, const refVecConst & m
     matrixI basis_mat = matrixI::Zero(N,M);
     vectorI int_mass_a = vectorI::Ones(N);
     vectorI int_mass_b = vectorI::Ones(M);
-    if (N != M || (mass_a.array() != 1.0/double(N)).all() ||  (mass_a.array() != 1.0/double(M)).all() ) {
+    if (N != M || (mass_a.array() != 1.0/double(N)).any() ||  (mass_b.array() != 1.0/double(M)).any() ) {
       max_val = double(1e09);
       intNormalizeMass(mass_a, mass_b, int_mass_a, int_mass_b, max_val);
       // if(method == "univariate") {

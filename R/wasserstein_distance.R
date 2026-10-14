@@ -245,8 +245,10 @@ wasserstein_calc_cost <- function(X, Y, a = NULL, b = NULL, p = 2, ground_p = 2,
   if (!is.matrix(Y)) {
     # warning("Attempting to coerce Y to a matrix")
     Y <- as.matrix(Y)
-    if (dim(Y)[2] == 1 & obs == "colwise") Y <- t(Y)
+    if (dim(Y)[2] == 1 && dim(Y)[1] != 1 && obs == "colwise") Y <- t(Y)
   }
+  
+  
   p <- as.double(p)
   ground_p <- as.double(ground_p)
   
