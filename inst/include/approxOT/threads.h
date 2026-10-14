@@ -16,12 +16,14 @@ inline int & approxOT_nthreads() {
 }
 
 // n <= 0 uses the default of half the available processors.
-// Never exceeds omp_get_max_threads() or OMP_THREAD_LIMIT, which avoids
+// Never exceeds the processor count or OMP_THREAD_LIMIT, which avoids
 // OpenMP runtime warnings (e.g., CRAN machines set OMP_THREAD_LIMIT=2).
+// Not capped by omp_get_max_threads(): omp_set_num_threads() calls
+// (e.g., in trans_networkflow) lower it for the whole session.
 inline int approxOT_set_threads(int n) {
 #ifdef _OPENMP
   if (n <= 0) n = omp_get_num_procs() / 2;
-  int lim = std::min(omp_get_max_threads(), omp_get_thread_limit());
+  int lim = std::min(omp_get_num_procs(), omp_get_thread_limit());
   approxOT_nthreads() = std::max(1, std::min(n, lim));
 #else
   approxOT_nthreads() = 1;

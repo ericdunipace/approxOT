@@ -12,9 +12,9 @@
 #' `R CMD check` (when `_R_CHECK_LIMIT_CORES_` is set) and half the
 #' available processors in all other cases.
 #'
-#' The number of threads never exceeds the OpenMP limits, such as the
-#' `OMP_NUM_THREADS` and `OMP_THREAD_LIMIT` environment variables. If
-#' approxOT was built without OpenMP support, it is always 1.
+#' The number of threads never exceeds the number of available processors
+#' or the `OMP_THREAD_LIMIT` environment variable. If approxOT was built
+#' without OpenMP support, it is always 1.
 #'
 #' @return If `n` is `NULL`, the number of threads in use. Otherwise the
 #' previous number of threads, invisibly, so that it can be restored later.
