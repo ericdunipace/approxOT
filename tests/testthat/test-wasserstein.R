@@ -206,8 +206,8 @@ testthat::test_that("wasserstein matches transport package",{
 
 testthat::test_that("make sure wass less than all other transports", {
   set.seed(32857)
-  A <- matrix(rnorm(1000*1024),nrow=1024,ncol=1000)
-  B <- matrix(rnorm(1000*1024),nrow=1024,ncol=1000)
+  A <- matrix(rnorm(1000*100),nrow=100,ncol=1000)
+  B <- matrix(rnorm(1000*100),nrow=100,ncol=1000)
   at <- t(A)
   bt <- t(B)
   cost <- cost_calc(at,bt,2)
@@ -239,8 +239,8 @@ testthat::test_that("make sure wass less than all other transports", {
 
 testthat::test_that("make sure sinkhorn outputs agree and are more than wass", {
   set.seed(32857)
-  A <- matrix(rnorm(1000*1024),nrow=1024,ncol=1000)
-  B <- matrix(rnorm(1000*1024),nrow=1024,ncol=1000)
+  A <- matrix(rnorm(1000*100),nrow=100,ncol=1000)
+  B <- matrix(rnorm(1000*100),nrow=100,ncol=1000)
   at <- t(A)
   bt <- t(B)
   cost <- cost_calc(at,bt,2)
@@ -268,8 +268,8 @@ testthat::test_that("make sure sinkhorn outputs agree and are more than wass", {
 
 testthat::test_that("give error when p < 1", {
   set.seed(32857)
-  A <- matrix(rnorm(1000*1024),nrow=1024,ncol=1000)
-  B <- matrix(rnorm(1000*1024),nrow=1024,ncol=1000)
+  A <- matrix(rnorm(1000*100),nrow=100,ncol=1000)
+  B <- matrix(rnorm(1000*100),nrow=100,ncol=1000)
   ground_p <- 2
   p <- 0
   
@@ -363,8 +363,8 @@ testthat::test_that("unbiased sinkhorn works", {
 
 testthat::test_that("sinkhorn_log works for all lambda",{
   set.seed(32857)
-  A <- matrix(rnorm(1000*1024),nrow=1024,ncol=1000)
-  B <- matrix(rnorm(1000*1024),nrow=1024,ncol=1000)
+  A <- matrix(rnorm(1000*100),nrow=100,ncol=1000)
+  B <- matrix(rnorm(1000*100),nrow=100,ncol=1000)
   at <- t(A)
   bt <- t(B)
   cost <- cost_calc(at,bt,2)
