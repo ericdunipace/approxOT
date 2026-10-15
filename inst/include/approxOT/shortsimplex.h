@@ -225,11 +225,12 @@
   
   m = state->m;
   n = state->n;
-  
-  aleft = (int *)calloc((long) m, sizeof(int));
-  bleft = (int *)calloc((long) n, sizeof(int));
-  adone = (int *)calloc((long) m, sizeof(int));
-  bdone = (int *)calloc((long) n, sizeof(int));
+  if (m <= 0 || n <= 0) return;   // nothing to transport
+
+  aleft = (int *)calloc((size_t) m, sizeof(int));
+  bleft = (int *)calloc((size_t) n, sizeof(int));
+  adone = (int *)calloc((size_t) m, sizeof(int));
+  bdone = (int *)calloc((size_t) n, sizeof(int));
   
   for (i = 0; i < m; i++) {
     for (j = 0; j < n; j++) {
@@ -1224,6 +1225,8 @@
     int m,n,maxdim;
     State state;
     int is_optimal;
+
+    if (*mm <= 0 || *nn <= 0) return;   // nothing to transport
     
     /* inputs/outputs */
     state.shl_s = *ss;

@@ -1,15 +1,19 @@
 #ifndef TRANS_SINKHORN_H
 #define TRANS_SINKHORN_H
 
+#include <algorithm>
+#include <cfloat>
+#include <cmath>
 #include "../approxOT_types.h"
 #include "utils.h"
+#include "threads.h"
 
-static inline double LogSumExp(matrix Mat) {
+static inline double LogSumExp(const matrix & Mat) {
   double max = Mat.maxCoeff();
   return std::log((Mat.array() - max).array().exp().sum()) + max;
 }
 
-static inline Eigen::VectorXd rowLogSumExp_(matrix Mat) {
+static inline Eigen::VectorXd rowLogSumExp_(const Eigen::Ref<const matrix> & Mat) {
   
   Eigen::VectorXd max = Mat.rowwise().maxCoeff();
   // Rcpp::Rcout << "max: " << max << "\n";
@@ -22,7 +26,7 @@ static inline Eigen::VectorXd rowLogSumExp_(matrix Mat) {
   // return (Mat.array().exp().rowwise().sum().log());
 }
 
-static inline Eigen::VectorXd colLogSumExp_(matrix Mat) {
+static inline Eigen::VectorXd colLogSumExp_(const Eigen::Ref<const matrix> & Mat) {
   
   Eigen::RowVectorXd max = Mat.colwise().maxCoeff();
   // Rcpp::Rcout << "max: " << max << "\n";
@@ -49,67 +53,107 @@ static inline double sinkhorn_converge_log(const Eigen::VectorXd & f, const Eige
   return(out);
 }
 
-static inline matrix generate_S_(const matrix & cost, Eigen::VectorXd & f, Eigen::VectorXd & g, double eta) {
-  matrix S = ((cost.colwise() - f).rowwise() - g.transpose()) * -eta;
-  return(S);
+static inline auto generate_S_(const matrix & cost, Eigen::VectorXd & f, Eigen::VectorXd & g, double eta) {
+  return(((cost.colwise() - f).rowwise() - g.transpose()) * -eta);
 }
 
-static inline matrix generate_S_star_(const matrix & K, Eigen::VectorXd & f, Eigen::VectorXd & g) {
-  matrix S = ((K.colwise() + f).rowwise() + g.transpose()) ;
-  return(S);
+static inline auto generate_S_star_(const matrix & K, Eigen::VectorXd & f, Eigen::VectorXd & g) {
+  return(((K.colwise() + f).rowwise() + g.transpose()));
 }
 
 static inline Eigen::VectorXd rowMin_eps_(const matrix & cost, Eigen::VectorXd & f, Eigen::VectorXd & g, double eta) {
   // return (rowLogSumExp((cost.rowwise() - g.transpose()) * - eta).array()/(-eta));
-  matrix S = generate_S_(cost, f, g, eta);
   return(
-    -(S.array().exp().rowwise().sum().log())/eta 
+    -(generate_S_(cost, f, g, eta).array().exp().rowwise().sum().log())/eta 
   );
 }
 
 static inline Eigen::VectorXd colMin_eps_(const matrix & cost, Eigen::VectorXd & f, Eigen::VectorXd & g, double eta) {
   
   // return (colLogSumExp((cost.colwise() - f) * - eta).array()/(-eta));
-  matrix S = generate_S_(cost, f, g, eta);
   return(
-    -(S.array().exp().colwise().sum().log())/eta 
+    -(generate_S_(cost, f, g, eta).array().exp().colwise().sum().log())/eta 
   );
 }
 
 static inline Eigen::VectorXd rowMin_eps_star_(const matrix & K, Eigen::VectorXd & f, Eigen::VectorXd & g) {
   // return (rowLogSumExp((cost.rowwise() - g.transpose()) * - eta).array()/(-eta));
-  matrix S = generate_S_star_(K, f, g);
   return(
-    -(S.array().exp().rowwise().sum().log())
+    -(generate_S_star_(K, f, g).array().exp().rowwise().sum().log())
   );
 }
 
 static inline Eigen::VectorXd colMin_eps_star_(const matrix & K, Eigen::VectorXd & f, Eigen::VectorXd & g) {
   
   // return (colLogSumExp((cost.colwise() - f) * - eta).array()/(-eta));
-  matrix S = generate_S_star_(K, f, g);
   return(
-    -(S.array().exp().colwise().sum().log()) 
+    -(generate_S_star_(K, f, g).array().exp().colwise().sum().log()) 
   );
 }
 
 static inline Eigen::VectorXd rowMin_eps_KL_(const matrix & cost, Eigen::VectorXd & f, Eigen::VectorXd & g, double eta,
                      Eigen::VectorXd & log_a, Eigen::VectorXd & log_b) {
   // return (rowLogSumExp((cost.rowwise() - g.transpose()) * - eta).array()/(-eta));
-  matrix S = generate_S_(cost, f, g, eta);
-  return(
-    -((S.rowwise() + log_b.transpose()).array().exp().rowwise().sum().log())/eta 
-  );
+  const int N = cost.rows(), M = cost.cols();
+  const Eigen::ArrayXd base = eta * f.array();                    // shift = old f
+  const Eigen::ArrayXd h = log_b.array() + eta * g.array(); 
+  Eigen::ArrayXd s(N);
+  #ifdef _OPENMP
+    #pragma omp parallel num_threads(approxOT_nthreads()) \
+      if(static_cast<long long>(N) * M >= approxOT_min_par_size)
+  #endif
+  {
+    int t = 0, T = 1;
+  #ifdef _OPENMP
+    t = omp_get_thread_num(); T = omp_get_num_threads();
+  #endif
+    const int chunk = (N + T - 1) / T, r0 = t * chunk, len = std::min(chunk, N - r0);
+    if (len > 0) {
+      Eigen::ArrayXd acc = Eigen::ArrayXd::Zero(len);
+      for (int j = 0; j < M; ++j)                                 // contiguous column segments
+        acc += (base.segment(r0, len) + h(j) - eta * cost.col(j).segment(r0, len).array()).exp();
+      s.segment(r0, len) = acc;
+    }
+  }
+  Eigen::VectorXd out = -s.log() / eta;
+  for (int i = 0; i < N; ++i) {                                   // rare underflow fallback
+    if (!(s(i) >= DBL_MIN) || !std::isfinite(s(i))) {
+      Eigen::ArrayXd t = h - eta * cost.row(i).transpose().array();
+      double mx = t.maxCoeff();
+      out(i) = -(mx + std::log((t - mx).exp().sum())) / eta - f(i);
+    }
+  }
+  return out;
+  // return(
+  //   -((generate_S_(cost, f, g, eta).rowwise() + log_b.transpose()).array().exp().rowwise().sum().log())/eta 
+  // );
 }
 
 static inline Eigen::VectorXd colMin_eps_KL_(const matrix & cost, Eigen::VectorXd & f, Eigen::VectorXd & g, double eta,
                      Eigen::VectorXd & log_a, Eigen::VectorXd & log_b) {
   
   // return (colLogSumExp((cost.colwise() - f) * - eta).array()/(-eta));
-  matrix S = generate_S_(cost, f, g, eta);
-  return(
-    -((S.colwise() + log_a).array().exp().colwise().sum().log())/eta 
-  );
+  // return(
+  //   -((generate_S_(cost, f, g, eta).colwise() + log_a).array().exp().colwise().sum().log())/eta 
+  // );
+  const int M = cost.cols();
+  const Eigen::ArrayXd h = log_a.array() + eta * f.array();
+  Eigen::VectorXd out(M);
+#ifdef _OPENMP
+  #pragma omp parallel for schedule(static) num_threads(approxOT_nthreads()) \
+    if(static_cast<long long>(cost.rows()) * M >= approxOT_min_par_size)
+#endif
+  for (int j = 0; j < M; ++j) {
+    double s = (h + eta * g(j) - eta * cost.col(j).array()).exp().sum();   // shift = old g(j)
+    if (s >= DBL_MIN && std::isfinite(s)) {
+      out(j) = -std::log(s) / eta;
+    } else {                                                      // rare underflow fallback
+      Eigen::ArrayXd t = h - eta * cost.col(j).array();
+      double mx = t.maxCoeff();
+      out(j) = -(mx + std::log((t - mx).exp().sum())) / eta - g(j);
+    }
+  }
+  return out;
 }
 
 
@@ -132,11 +176,13 @@ static inline Eigen::VectorXd colMin_eps_KL_(const matrix & cost, Eigen::VectorX
 //' @return void
 //' @keywords internal
 // avoid log scaling
-static inline void trans_sinkhorn(const refVecConst & mass_a, const refVecConst & mass_b,
+static inline void trans_sinkhorn(
+  Eigen::VectorXd & f, Eigen::VectorXd & g,
+  const refVecConst & mass_a, const refVecConst & mass_b,
                      const matrix & exp_cost,
                      matrix & A,
                      double eta, double epsilon, int niterations,
-                     Eigen::VectorXd & f, Eigen::VectorXd & g) {
+                    bool skip_A) {
    int N = mass_a.size();
    int M = mass_b.size();
    
@@ -149,17 +195,20 @@ static inline void trans_sinkhorn(const refVecConst & mass_a, const refVecConst 
    Eigen::VectorXd u_old = u; // first margins
    // Eigen::VectorXd v_old = v; // second margins
    
+   Eigen::VectorXd Ktu(M), Kv(N); //holders
    
    // matrix scaling
    for ( int i = 0; i < niterations; i ++){
      // column margins
-     v = mass_b.cwiseQuotient(exp_cost.transpose() * u);
+     Ktu.noalias() = exp_cost.transpose() * u;
+     v = mass_b.cwiseQuotient(Ktu);
      
      // row margins
-     u = mass_a.cwiseQuotient(exp_cost * v);
+     Kv.noalias() = exp_cost * v;
+     u = mass_a.cwiseQuotient(Kv);
      
      // calc relative change in scaling vectors to see if approx converged
-     if (i % 10) {
+     if (i % 10 == 0) {
        if (sinkhorn_converge(u, u_old) <= epsilon) {
          break;
        } else {
@@ -171,7 +220,10 @@ static inline void trans_sinkhorn(const refVecConst & mass_a, const refVecConst 
    }
    
    // get approximate assignment matrix
-   A = u.asDiagonal() * exp_cost * v.asDiagonal();
+   if(!skip_A) {
+      A = u.asDiagonal() * exp_cost * v.asDiagonal();
+   }
+  
    
    f = u.array().log() / eta;
    g = v.array().log() / eta;
@@ -192,23 +244,25 @@ static inline void trans_sinkhorn(const refVecConst & mass_a, const refVecConst 
 //' @return void
 //' @keywords internal
 static inline void trans_sinkhorn_self(Eigen::VectorXd & f, const refVecConst & mass_a,
-                          double eta,
                           const matrix & exp_cost,
+                          double eta,
                           double epsilon, int niterations) {
    int N = mass_a.size();
    
-   Eigen::VectorXd ones_n = Eigen::VectorXd::Ones(N);
-   Eigen::VectorXd u = ones_n;
-   Eigen::VectorXd u_old = ones_n; // first margins
+   Eigen::VectorXd u = Eigen::VectorXd::Ones(N);
+   Eigen::VectorXd u_old = Eigen::VectorXd::Ones(N); // first margins
    
+   Eigen::VectorXd Ktu(N);
    
    // matrix scaling
    for ( int i = 0; i < niterations; i ++){
      // row margins
-     u = mass_a.cwiseQuotient(exp_cost * u);
-     
+     Ktu.noalias() = exp_cost * u;
+     u = (u.array() * mass_a.array() / Ktu.array()).sqrt().matrix();
+
      // calc relative change in scaling vectors to see if approx converged
-     if (i % 10) {
+     if (i % 10 == 0) {
+       Rcpp::checkUserInterrupt();
        if (sinkhorn_converge(u, u_old) <= epsilon) {
          break;
        }
@@ -238,11 +292,13 @@ static inline void trans_sinkhorn_self(Eigen::VectorXd & f, const refVecConst & 
 //' @param g_pot The potentials of the dual problem
 //' @return void
 //' @keywords internal
- static inline void trans_sinkhorn_log(const refVecConst & mass_a, const refVecConst & mass_b,
+ static inline void trans_sinkhorn_log(
+  Eigen::VectorXd & f_pot, Eigen::VectorXd & g_pot,
+  const refVecConst & mass_a, const refVecConst & mass_b,
                          const matrix & cost,
                          matrix & Assign,
                          double eta, double epsilon, int niterations,
-                         Eigen::VectorXd & f_pot, Eigen::VectorXd & g_pot) {
+                        bool skip_A) {
    int N = mass_a.size();
    // int M = mass_b.size();
    
@@ -288,23 +344,23 @@ static inline void trans_sinkhorn_self(Eigen::VectorXd & f, const refVecConst & 
      
      // KL version of sinkhorn
      // row margins
-     A += rowMin_eps_KL_(cost, A, B, eta, log_a, log_b).eval();
+     A += rowMin_eps_KL_(cost, A, B, eta, log_a, log_b);
      
      // column margins
-     B += colMin_eps_KL_(cost, A, B, eta, log_a, log_b).eval();
+     B += colMin_eps_KL_(cost, A, B, eta, log_a, log_b);
      
      
      // Rcpp::Rcout << i << ":\n ";
      // Rcpp::Rcout << "A: \n" << A.transpose() << "\n";
      // Rcpp::Rcout << "B: \n" << B.transpose() << "\n";
      // calc relative change in scaling vectors to see if approx converged
-     // if (i % 10) {
-     if (sinkhorn_converge_log(A, A_old) <= epsilon) {
-       break;
-     } else {
-       Rcpp::checkUserInterrupt();
+     if (i % 10 == 0) {
+      if (sinkhorn_converge_log(A, A_old) <= epsilon) {
+        break;
+      } else {
+        Rcpp::checkUserInterrupt();
+      }
      }
-     // }
      A_old = A;
      // B_old = B;
    }
@@ -335,8 +391,10 @@ static inline void trans_sinkhorn_self(Eigen::VectorXd & f, const refVecConst & 
    
    // get approximate assignment matrix
    // Assign = ((K.colwise() + A).rowwise() + B.transpose()).array().exp();
-   matrix S = generate_S_(cost, f_pot, g_pot, eta);
-   Assign = (S.array() - LogSumExp(S)).array().exp();
+   if(!skip_A) {
+    Assign = (generate_S_(cost, f_pot, g_pot, eta).colwise() + log_a).rowwise() + log_b.transpose();
+    Assign = (Assign.array() - LogSumExp(Assign)).exp();
+   }
    // Rcpp::Rcout << "using unbiased potentials " << ((A.array().exp().matrix().asDiagonal() * K.array().exp().matrix() * B.array().exp().matrix().asDiagonal()).array() * cost.array()).sum() << "\n";
    // Rcpp::Rcout << "using Assign from paper" << (Assign.array() * cost.array()).sum() << "\n";
    
@@ -356,7 +414,7 @@ static inline void trans_sinkhorn_self(Eigen::VectorXd & f, const refVecConst & 
 //' @param niterations The iterations to use for the methods
 //' @return void
 //' @keywords internal
- static inline void trans_sinkhorn_autocorr_log(Eigen::VectorXd & f, const refVecConst & mass_a,
+ static inline void trans_sinkhorn_self_log(Eigen::VectorXd & f, const refVecConst & mass_a,
                                   const matrix & cost,
                                   double eta, double epsilon, int niterations) {
    int N = mass_a.size();
@@ -384,12 +442,15 @@ static inline void trans_sinkhorn_self(Eigen::VectorXd & f, const refVecConst & 
      
      
      // column margins
-     f += colMin_eps_KL_(cost, f, f, eta, log_a, log_a).eval();
+     f += 0.5 * colMin_eps_KL_(cost, f, f, eta, log_a, log_a);
      
-     
-     if (sinkhorn_converge_log(f, f_old) <= epsilon) {
-       break;
+     if(i % 10 == 0) {
+      Rcpp::checkUserInterrupt();
+      if (sinkhorn_converge_log(f, f_old) <= epsilon) {
+        break;
+      }
      }
+     
      // }
      f_old = f;
    }

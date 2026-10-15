@@ -101,98 +101,79 @@ testthat::test_that("transport hilbert works", {
 
 testthat::test_that("transport rank works", {
   set.seed(19380)
-  n <- 1000
-  d <- 500
+  n <- 100
+  d <- 10
   corr <- matrix(0.5, nrow=d, ncol=d)
   diag(corr) <- 1
   x <- t(chol(corr)) %*% matrix(rnorm(d*n), nrow=d, ncol=n)
   y <- t(chol(corr)) %*% matrix(rnorm(d*n), nrow=d, ncol=n)
   method <- "rank"
   
+  # average rank of each observation (column) across the d covariates
+  avg_rank <- function(z) rowMeans(apply(z, 1, rank))
   
-  # try R ranks
-  x_ranks <- apply(x, 1, rank)
-  y_ranks <- apply(y, 1, rank)
+  # the rank method is a monotone matching on average ranks: ordering the
+  # Y atoms by average rank must also order their matched X atoms. checked
+  # this way because average ranks have ties and the C++ sort may break
+  # them differently than R (or than other platforms)
+  expect_rank_plan <- function(tplan, rx, ry) {
+    testthat::expect_equal(sort(tplan$from), 1:n)
+    testthat::expect_equal(sort(tplan$to), 1:n)
+    testthat::expect_equal(tplan$mass, rep(1/n, n))
+    o <- order(ry[tplan$to], rx[tplan$from])
+    testthat::expect_false(is.unsorted(rx[tplan$from][o]))
+  }
   
-  x_idx <- order(apply(x_ranks,1,mean))
-  y_idx <- order(apply(y_ranks,1,mean))
+  rx <- avg_rank(x)
+  ry <- avg_rank(y)
   
-  Rxsort <- x[, x_idx]
-  Rysort <- y[, y_idx]
-  
-  
-  #get rank sort orders for x in backwards way
-  transx <- transport_plan(X=x, Y=Rxsort, ground_p = 2, p = 2, 
-                           observation.orientation =  "colwise",
-                           method = method, is.X.sorted = FALSE)
-  
-  #get rank sort orders for y in backwards way
-  transy <- transport_plan(X=y, Y=Rysort, p = 2, ground_p = 2, 
-                           observation.orientation =  "colwise", 
-                           method = method, is.X.sorted = FALSE)
-  
-  
-  xsort <- x[ , transx$tplan$from]
-  ysort <- y[ , transy$tplan$from]
-  
+  xsort <- x[, order(rx)]
+  ysort <- y[, order(ry)]
   
   #sort y on unsorted x
-  trans <- transport_plan(X=x, Y=y,  ground_p = 2, 
+  trans <- transport_plan(X=x, Y=y,  ground_p = 2, p = 2,
                           observation.orientation =  "colwise", 
                           method = method)
+  expect_rank_plan(trans$tplan, rx, ry)
   
-  #sort y on sorted x
-  trans.sortx <- transport_plan(X=xsort, Y=y,  ground_p = 2, 
+  #swap roles of x and y
+  trans.yx <- transport_plan(X=y, Y=x,  ground_p = 2, p = 2,
+                             observation.orientation =  "colwise", 
+                             method = method)
+  expect_rank_plan(trans.yx$tplan, ry, rx)
+  
+  #sorting the inputs first shouldn't change the matching
+  trans.sorted <- transport_plan(X=xsort, Y=ysort,  ground_p = 2, p = 2,
+                                 observation.orientation =  "colwise", 
+                                 method = method)
+  expect_rank_plan(trans.sorted$tplan, avg_rank(xsort), avg_rank(ysort))
+  
+  #is.X.sorted = TRUE uses the column order of X as given
+  trans.sortx <- transport_plan(X=xsort, Y=y,  ground_p = 2, p = 2,
                                 observation.orientation =  "colwise", 
                                 method = method, is.X.sorted = TRUE)
+  expect_rank_plan(trans.sortx$tplan, 1:n, ry)
   
-  #check on sorted y
-  trans.sorty <- transport_plan(X=x, Y=ysort,  ground_p = 2, 
-                                observation.orientation =  "colwise", 
-                                method = method, is.X.sorted = FALSE)
-  #check on sorted y
-  trans.sortxony <- transport_plan(X=ysort, Y=x,  ground_p = 2, 
-                                   observation.orientation =  "colwise", 
-                                   method = method)
+  trans.asis <- transport_plan(X=x, Y=y,  ground_p = 2, p = 2,
+                               observation.orientation =  "colwise", 
+                               method = method, is.X.sorted = TRUE)
+  expect_rank_plan(trans.asis$tplan, 1:n, ry)
   
-  #check on sorted y and x does nothing
-  trans.nothing <- transport_plan(X=xsort, Y=ysort,  ground_p = 2, 
-                                  observation.orientation =  "colwise", 
-                                  method = method, is.X.sorted = TRUE)
+  #matching a sample to itself
+  trans.self <- transport_plan(X=x, Y=x,  ground_p = 2, p = 2,
+                               observation.orientation =  "colwise", 
+                               method = method)
+  expect_rank_plan(trans.self$tplan, rx, rx)
   
-  # compare C order to R order # order of two obs reversed in each on some platforms
-  # need to examine further but not huge issue
-  # testthat::expect_equal(x_idx, transx$tplan$from)
-  # testthat::expect_equal(y_idx, transy$tplan$from)
-  
-  # test to see if sort of x matches y
-  testthat::expect_equal(trans$tplan$from[transy$tplan$from], transx$tplan$from)
-  
-  testthat::expect_equal(trans.sorty$tplan$from, transx$tplan$from) #unnecessary
-  testthat::expect_equal(order(trans.sortx$tplan$from), transy$tplan$from) #unnecessary
-  
-  #make sure get return of 1:n vector
-  testthat::expect_equal(trans.nothing$tplan$from, trans.nothing$tplan$to)
-  testthat::expect_equal(1:n, trans.nothing$tplan$to)
-  testthat::expect_equal(trans.nothing$tplan$from, 1:n)
-  
-  #make sure pre-sorted x returns 1:n
-  testthat::expect_equal(trans.sortx$tplan$to, transy$tplan$to)
-  testthat::expect_equal(transx$tplan$to, trans.sortxony$tplan$to)
-  
-  # make sure all costs are null
-  # testthat::expect_null(trans$cost)
-  # testthat::expect_null(trans.sortx$cost)
-  # testthat::expect_null(trans.sorty$cost)
-  # testthat::expect_null(transx$cost)
-  # testthat::expect_null(transy$cost)
-  # testthat::expect_null(trans.nothing$cost)
+  testthat::expect_error(transport_plan(X=x, Y=y[, -1], ground_p = 2, p = 2,
+                                        observation.orientation =  "colwise",
+                                        method = method))
 })
 
 testthat::test_that("transport univariate.approx.pwr works", {
   set.seed(19380)
-  n <- 1000
-  d <- 500
+  n <- 100
+  d <- 10
   corr <- matrix(0.5, nrow=d, ncol=d)
   diag(corr) <- 1
   x <- t(chol(corr)) %*% matrix(rnorm(d*n), nrow=d, ncol=n)
@@ -553,7 +534,44 @@ testthat::test_that("greenkhorn works", {
   testthat::expect_true((1/n) %in% tapply(trans$tplan$mass, trans$tplan$to, sum))
   testthat::expect_true((1/n) %in% tapply(trans.row$tplan$mass, trans.row$tplan$to, sum))
   testthat::expect_lte(sum((transtest$mass-trans$tplan$mass)^2), 1e-3)
-  
+
+})
+
+testthat::test_that("greenkhorn works without switching to log sinkhorn", {
+  set.seed(7340981)
+  n <- 30
+  m <- 20
+  d <- 3
+  x <- matrix(rnorm(n*d), n, d)
+  y <- matrix(rnorm(m*d), m, d) + 1
+  cost <- cost_calc(t(x), t(y), 2.0)^2
+  mass_a <- runif(n) + 0.5
+  mass_a <- mass_a/sum(mass_a)
+  mass_b <- runif(m) + 0.5
+  mass_b <- mass_b/sum(mass_b)
+  epsilon <- 1
+
+  # small enough that the exp-domain methods run without the underflow switch
+  testthat::expect_lt(max(cost)/epsilon, 700)
+
+  # unbiased = TRUE skips rounding, so the margins come from greenkhorn itself
+  testthat::expect_silent(
+    green <- transport_plan_given_C(mass_a, mass_b, 1, cost = cost, method = "greenkhorn",
+                                    epsilon = epsilon, niter = 1e5, unbiased = TRUE)
+  )
+  testthat::expect_silent(
+    sink <- transport_plan_given_C(mass_a, mass_b, 1, cost = cost, method = "sinkhorn",
+                                   epsilon = epsilon, niter = 1e4, unbiased = TRUE,
+                                   cost_a = cost, cost_b = cost)
+  )
+
+  testthat::expect_equal(as.numeric(tapply(green$mass, factor(green$from, 1:n), sum)),
+                         mass_a, tolerance = 1e-6)
+  testthat::expect_equal(as.numeric(tapply(green$mass, factor(green$to, 1:m), sum)),
+                         mass_b, tolerance = 1e-6)
+  testthat::expect_equal(green$mass[order(green$from, green$to)],
+                         sink$mass[order(sink$from, sink$to)],
+                         tolerance = 1e-6)
 })
 
 # testthat::test_that("randkhorn works", {

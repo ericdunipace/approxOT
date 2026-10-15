@@ -1,44 +1,49 @@
-
 col_logsumexp <- function(mat) {
-  maxes <- apply(mat,2,max)
+  maxes <- apply(mat, 2, max)
   return(
     maxes + log(colSums(exp(sweep(mat, 2, maxes))))
   )
 }
 
 row_logsumexp <- function(mat) {
-  maxes <- apply(mat,1,max)
+  maxes <- apply(mat, 1, max)
   return(
     maxes + log(rowSums(exp(sweep(mat, 1, maxes))))
   )
 }
 
-log_sinkhorn_test <- function(mass_x, mass_y, cost = NULL, eps = 0.05, niterations = 100){
+log_sinkhorn_test <- function(
+  mass_x,
+  mass_y,
+  cost = NULL,
+  eps = 0.05,
+  niterations = 100
+) {
   update_g <- function(cost, f, lambda, log_b) {
-    -lambda * col_logsumexp(-sweep(cost, 1, f)/lambda) - lambda * log_b
+    -lambda * col_logsumexp(-sweep(cost, 1, f) / lambda) - lambda * log_b
   }
   update_f <- function(cost, g, lambda, log_a) {
-    -lambda * row_logsumexp(-sweep(cost, 2, g)/lambda) - lambda * log_a
+    -lambda * row_logsumexp(-sweep(cost, 2, g) / lambda) - lambda * log_a
   }
   converge_log <- function(pot, pot_old, tol) {
-    return(isTRUE(sum(abs(pot - pot_old)/abs(pot_old)) < tol))
+    return(isTRUE(sum(abs(pot - pot_old) / abs(pot_old)) < tol))
   }
   n1 <- length(mass_x)
   n2 <- length(mass_y)
   log_x <- log(mass_x)
   log_y <- log(mass_y)
-  
+
   # costp <- cost^p
-  lambda <- eps * stats::median(cost)
-  f_old <- rep(0,n1)
-  g_old <- rep(0,n2)
-  
-  f <- -lambda * row_logsumexp(-cost/lambda) + lambda * log_x
+  lambda <- eps #* stats::median(cost)
+  f_old <- rep(0, n1)
+  g_old <- rep(0, n2)
+
+  f <- -lambda * row_logsumexp(-cost / lambda) + lambda * log_x
   g <- update_g(cost, f, lambda, log_y)
-  for( i in 1:niterations) {
+  for (i in 1:niterations) {
     f <- update_f(cost, g, lambda, log_x)
     g <- update_g(cost, f, lambda, log_y)
-    
+
     if (converge_log(f, f_old, tol = 1e-8)) {
       break
     } else {
@@ -46,7 +51,7 @@ log_sinkhorn_test <- function(mass_x, mass_y, cost = NULL, eps = 0.05, niteratio
       g_old <- g
     }
   }
-  
+
   return(list(f = f, g = g))
 }
 
@@ -59,9 +64,15 @@ row_softmin <- function(mat) {
   -log(rowSums(exp(mat)))
 }
 
-log_sinkhorn_test_nomax <- function(mass_x, mass_y, cost = NULL, eps = 0.05, niterations = 100){
+log_sinkhorn_test_nomax <- function(
+  mass_x,
+  mass_y,
+  cost = NULL,
+  eps = 0.05,
+  niterations = 100
+) {
   generate_S <- function(cost, f, g, lambda) {
-    S <- -sweep(sweep(cost, 1, f), 2, g)/lambda
+    S <- -sweep(sweep(cost, 1, f), 2, g) / lambda
     return(S)
   }
   update_g <- function(cost, f, g, lambda, log_a, log_b) {
@@ -77,25 +88,27 @@ log_sinkhorn_test_nomax <- function(mass_x, mass_y, cost = NULL, eps = 0.05, nit
     )
   }
   converge_log <- function(pot, pot_old, tol) {
-    return(isTRUE(sum(abs(pot - pot_old))/sum(abs(pot_old)) < tol))
+    return(isTRUE(sum(abs(pot - pot_old)) / sum(abs(pot_old)) < tol))
   }
   n1 <- length(mass_x)
   n2 <- length(mass_y)
   log_x <- log(mass_x)
   log_y <- log(mass_y)
-  
+
   # costp <- cost^p
-  lambda <- eps * stats::median(cost)
-  f <- -lambda * row_logsumexp(-cost/lambda) + lambda * log_x
-  f_old <- rep(0,n1)
-  g <- -lambda * col_logsumexp(-sweep(cost,1,f)/lambda) + lambda * log_y
-  g_old <- rep(0,n2)
-  
-  for( i in 1:niterations) {
+  lambda <- eps #* stats::median(cost)
+  f <- -lambda * row_logsumexp(-cost / lambda) + lambda * log_x
+  f_old <- rep(0, n1)
+  g <- -lambda * col_logsumexp(-sweep(cost, 1, f) / lambda) + lambda * log_y
+  g_old <- rep(0, n2)
+
+  for (i in 1:niterations) {
     f <- update_f(cost, f, g, lambda, log_x, log_y)
     g <- update_g(cost, f, g, lambda, log_x, log_y)
-    
-    if(any(is.nan(f)) || any(is.nan(g))) browser()
+
+    if (any(is.nan(f)) || any(is.nan(g))) {
+      browser()
+    }
     if (converge_log(f, f_old, tol = 1e-8)) {
       break
     } else {
@@ -103,47 +116,56 @@ log_sinkhorn_test_nomax <- function(mass_x, mass_y, cost = NULL, eps = 0.05, nit
       g_old <- g
     }
   }
-  
+
   return(list(f = f, g = g))
 }
 
-log_sinkhorn_test_nomax_KL <- function(mass_x, mass_y, cost = NULL, eps = 0.05, niterations = 100){
+log_sinkhorn_test_nomax_KL <- function(
+  mass_x,
+  mass_y,
+  cost = NULL,
+  eps = 0.05,
+  niterations = 100
+) {
   generate_S <- function(cost, f, g, lambda) {
-    S <- -sweep(sweep(cost, 1, f), 2, g)/lambda
+    S <- -sweep(sweep(cost, 1, f), 2, g) / lambda
     return(S)
   }
   update_g <- function(cost, f, g, lambda, log_a, log_b) {
     S <- generate_S(cost, f, g, lambda)
     return(
-      lambda * col_softmin(sweep(S,1,log_a, "+")) + g 
+      lambda * col_softmin(sweep(S, 1, log_a, "+")) + g
     )
   }
   update_f <- function(cost, f, g, lambda, log_a, log_b) {
     S <- generate_S(cost, f, g, lambda)
     return(
-      lambda * row_softmin(sweep(S,2,log_b, "+")) + f
+      lambda * row_softmin(sweep(S, 2, log_b, "+")) + f
     )
   }
   converge_log <- function(pot, pot_old, tol) {
-    return(isTRUE(sum(abs(pot - pot_old))/sum(abs(pot_old)) < tol))
+    return(isTRUE(sum(abs(pot - pot_old)) / sum(abs(pot_old)) < tol))
   }
   n1 <- length(mass_x)
   n2 <- length(mass_y)
   log_x <- log(mass_x)
   log_y <- log(mass_y)
-  
+
   # costp <- cost^p
-  lambda <- eps * stats::median(cost)
-  f <- -lambda * row_logsumexp(sweep(-cost/lambda,2,log_y,"+")) 
-  f_old <- rep(0,n1)
-  g <- -lambda * col_logsumexp(sweep(-sweep(cost,1,f)/lambda,1,log_x,"+"))
-  g_old <- rep(0,n2)
-  
-  for( i in 1:niterations) {
+  lambda <- eps #* stats::median(cost)
+  f <- -lambda * row_logsumexp(sweep(-cost / lambda, 2, log_y, "+"))
+  f_old <- rep(0, n1)
+  g <- -lambda *
+    col_logsumexp(sweep(-sweep(cost, 1, f) / lambda, 1, log_x, "+"))
+  g_old <- rep(0, n2)
+
+  for (i in 1:niterations) {
     f <- update_f(cost, f, g, lambda, log_x, log_y)
     g <- update_g(cost, f, g, lambda, log_x, log_y)
-    
-    if(any(is.nan(f)) || any(is.nan(g))) browser()
+
+    if (any(is.nan(f)) || any(is.nan(g))) {
+      browser()
+    }
     if (converge_log(f, f_old, tol = 1e-8)) {
       break
     } else {
@@ -151,7 +173,7 @@ log_sinkhorn_test_nomax_KL <- function(mass_x, mass_y, cost = NULL, eps = 0.05, 
       g_old <- g
     }
   }
-  
+
   return(list(f = f, g = g))
 }
 
@@ -177,7 +199,7 @@ round_transport_matrix <- function(transport_matrix, mass_x, mass_y) {
   #            cost=cost)
   # tmat <- exp(sweep(sweep(cost^2,1,tpot$f ),2,tpot$g)/(0.05 * median(cost^2)))
   # tmat <- tmat/sum(tmat)
-  # 
+  #
   # rounded <- approxOT:::round_transport_matrix(tmat, mass_x = mass_x,
   # mass_y = mass_y)
   # all.equal(rowSums(rounded), mass_x)
@@ -186,8 +208,7 @@ round_transport_matrix <- function(transport_matrix, mass_x, mass_y) {
   stopifnot(ncol(transport_matrix) == length(mass_y))
   a <- as.double(mass_x)
   b <- as.double(mass_y)
-  
-  
+
   tmat <- round_2_feasible_(transport_matrix, a, b)
   return(tmat)
 }
