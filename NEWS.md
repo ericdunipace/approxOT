@@ -1,4 +1,7 @@
-# approxOT
+# approxOT (development version)
+
+## Changes so far in development
+* None
 
 ## Changes in Version 1.3
 ### Major changes
